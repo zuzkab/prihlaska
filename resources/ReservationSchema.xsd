@@ -3,38 +3,40 @@
 	<xsd:element name="registration" type="registrationType"/>
 
 	<xsd:complexType name="registrationType">
-		<xsd:sequence>
-		
-			<xsd:element name="buyer" minOccurs="1" maxOccurs="1">
-				<xsd:complexType>
-			    	<xsd:sequence>
-			      		<xsd:element name="name" type="xsd:string"/>
-			      		<xsd:element name="surname" type="xsd:string"/>
-			      		<xsd:element name="email" type="xsd:string"/>
-			    	</xsd:sequence>
-			    	<xsd:attribute name="type" type="xsd:string" use="required"/>
-			  	</xsd:complexType>
-			</xsd:element>
-			
-			<xsd:element name="course" minOccurs="1" maxOccurs="1">
-				<xsd:complexType>
-			    	<xsd:sequence>
-			      		<xsd:element name="date" type="xsd:date"/>
-			      		<xsd:element name="time" type="xsd:time"/>
-			      		<xsd:element name="onlinepayment" type="xsd:boolean"/>
-			    	</xsd:sequence>
-			  	</xsd:complexType>
-			</xsd:element>
-			
-			<xsd:element name="guests" minOccurs="1" maxOccurs="1" type="guestsType"/>
-			
+		<xsd:sequence>		
+			<xsd:element name="buyer" minOccurs="1" maxOccurs="1" type="buyerType"/>	
+			<xsd:element name="course" minOccurs="1" maxOccurs="1" type="courseType"/>			
+			<xsd:element name="guests" minOccurs="0" maxOccurs="1" type="guestsType"/>		
 		</xsd:sequence>
+	</xsd:complexType>
+	
+	<xsd:complexType name="buyerType">
+	   	<xsd:sequence>
+			<xsd:element name="name" type="xsd:string"/>
+			<xsd:element name="surname" type="xsd:string"/>
+			<xsd:element name="email">
+				<xsd:simpleType> 
+					<xsd:restriction base="xsd:string"> 
+	   					<xsd:pattern value=".+\@.+\..+"/> 
+				    </xsd:restriction> 
+			  	</xsd:simpleType>
+	   		</xsd:element>
+	   	</xsd:sequence>
+	  	<xsd:attribute name="type" type="xsd:string" use="required"/>
+	</xsd:complexType>
+	
+	<xsd:complexType name="courseType">
+	   	<xsd:sequence>
+	   		<xsd:element name="date" type="xsd:date"/>
+	   		<xsd:element name="time" type="xsd:time"/>
+	   		<xsd:element name="onlinepayment" type="xsd:boolean"/>
+	   	</xsd:sequence>
 	</xsd:complexType>
 
 	<xsd:complexType name="guestsType">
 		<xsd:sequence>
 		
-			<xsd:element name="guest" minOccurs="1" maxOccurs="7">	
+			<xsd:element name="guest" minOccurs="0" maxOccurs="7">	
 					
 				<xsd:complexType>
 			    	<xsd:sequence>
