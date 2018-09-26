@@ -1,0 +1,24 @@
+<registration>
+	<buyer type="adult">
+		<name>Júlia</name>
+		<surname>Biela</surname>
+		<email>julia.biela@gmail.com</email>
+	</buyer>
+	
+	<course>
+		<date>2018-11-18</date>
+		<time>15:00:00</time>
+		<onlinepayment>true</onlinepayment>
+	</course>
+	
+	<guests>
+		<guest type="child">
+			<name>Eduard</name>
+			<surname>Biely</surname>
+		</guest>
+		<guest type="child">
+			<name>Marta</name>
+			<surname>Biela</surname>
+		</guest>
+	</guests>
+</registration>s
