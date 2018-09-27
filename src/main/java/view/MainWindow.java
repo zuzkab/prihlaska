@@ -223,7 +223,7 @@ public class MainWindow {
 	}
 	
 	private JLabel getGuestNameLabel(int yOffset) {
-		return getLabel(25, yOffset, "Name");
+		return getLabel(25, yOffset, "Name:");
 	}
 	
 	private JTextField getGuestNameTextField(int yOffset) {
@@ -231,7 +231,7 @@ public class MainWindow {
 	}
 	
 	private JLabel getGuestSurnameLabel(int yOffset) {
-		return getLabel(280, yOffset, "Surname");
+		return getLabel(280, yOffset, "Surname:");
 	}
 	
 	private JTextField getGuestSurnameTextField(int yOffset) {
