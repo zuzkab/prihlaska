@@ -5,6 +5,7 @@ import java.util.Properties;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -13,7 +14,6 @@ import javax.swing.JTextField;
 import org.jdatepicker.impl.JDatePanelImpl;
 import org.jdatepicker.impl.JDatePickerImpl;
 import org.jdatepicker.impl.UtilDateModel;
-import javax.swing.JCheckBox;
 
 public class MainWindow {
 
@@ -116,16 +116,16 @@ public class MainWindow {
 		JDatePickerImpl datePicker = new JDatePickerImpl(datePanel, new DateLabelFormatter());
 		datePicker.setBounds(110, 28, 130, 25);
 		panel_2.add(datePicker);
-		
+
 		JLabel label_4 = new JLabel("Time:");
 		label_4.setBounds(280, 28, 70, 25);
 		panel_2.add(label_4);
-		
+
 		textField_3 = new JTextField();
 		textField_3.setBounds(389, 28, 130, 25);
 		textField_3.setColumns(10);
 		panel_2.add(textField_3);
-		
+
 		JCheckBox chckbxOnlinePayment = new JCheckBox("Online payment");
 		chckbxOnlinePayment.setBounds(21, 61, 158, 23);
 		panel_2.add(chckbxOnlinePayment);
@@ -157,5 +157,26 @@ public class MainWindow {
 		JButton btnAddGuest = new JButton("Add guest");
 		btnAddGuest.setBounds(412, 60, 106, 25);
 		panel_3.add(btnAddGuest);
+
+		JPanel panel_4 = new JPanel();
+		panel_4.setBounds(12, 371, 576, 30);
+		panel_4.setLayout(null);
+		frame.getContentPane().add(panel_4);
+
+		JButton btnShow = new JButton("Show");
+		btnShow.setSize(73, 25);
+		btnShow.setBounds(panel_4.getWidth() - btnShow.getWidth() - 2, 0, btnShow.getWidth(), btnShow.getHeight());
+		panel_4.add(btnShow);
+
+		JButton btnValidate = new JButton("Validate");
+		btnValidate.setSize(93, 25);
+		btnValidate.setBounds(btnShow.getX() - btnValidate.getWidth() - 5, 0, btnValidate.getWidth(),
+				btnValidate.getHeight());
+		panel_4.add(btnValidate);
+
+		JButton btnSave = new JButton("Save");
+		btnSave.setSize(68, 25);
+		btnSave.setBounds(btnValidate.getX() - btnSave.getWidth() - 5, 0, btnSave.getWidth(), btnSave.getHeight());
+		panel_4.add(btnSave);
 	}
 }
