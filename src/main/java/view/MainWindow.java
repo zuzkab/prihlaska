@@ -60,19 +60,19 @@ public class MainWindow {
 	 */
 	private void initialize() {
 		frame = new JFrame();
-		frame.setBounds(100, 100, 600, 500);
+		frame.setBounds(100, 100, 570, 450);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.getContentPane().setLayout(null);
 
 		panel = new JPanel();
-		panel.setBounds(12, 12, 576, 32);
+		panel.setBounds(12, 12, 556, 32);
 		frame.getContentPane().add(panel);
 
 		JLabel lblRegistration = new JLabel("Registration");
 		panel.add(lblRegistration);
 
 		JPanel panel_1 = new JPanel();
-		panel_1.setBounds(12, 56, 576, 95);
+		panel_1.setBounds(12, 56, 544, 95);
 		panel_1.setBorder(BorderFactory.createTitledBorder("Buyer info"));
 		panel_1.setLayout(null);
 		frame.getContentPane().add(panel_1);
@@ -106,7 +106,7 @@ public class MainWindow {
 
 		JPanel panel_2 = new JPanel();
 		panel_2.setBorder(BorderFactory.createTitledBorder("Course info"));
-		panel_2.setBounds(12, 160, 576, 95);
+		panel_2.setBounds(12, 160, 544, 95);
 		panel_2.setLayout(null);
 		frame.getContentPane().add(panel_2);
 
@@ -139,7 +139,7 @@ public class MainWindow {
 
 		panel_3 = new JPanel();
 		panel_3.setBorder(BorderFactory.createTitledBorder("Guest info"));
-		panel_3.setBounds(12, 267, 576, 95);
+		panel_3.setBounds(12, 267, 544, 95);
 		frame.getContentPane().add(panel_3);
 		panel_3.setLayout(null);
 
@@ -171,7 +171,7 @@ public class MainWindow {
 		panel_3.add(btnAddGuest);
 
 		panel_4 = new JPanel();
-		panel_4.setBounds(12, panel_3.getY() + panel_3.getHeight() + 10, 576, 30);
+		panel_4.setBounds(12, panel_3.getY() + panel_3.getHeight() + 10, 544, 30);
 		panel_4.setLayout(null);
 		frame.getContentPane().add(panel_4);
 
@@ -213,6 +213,7 @@ public class MainWindow {
 	}
 	
 	private void increasePanelsHeight(int inc) {
+		frame.setSize(frame.getWidth(), frame.getHeight() + inc);
 		panel_3.setSize(panel_3.getWidth(), panel_3.getHeight() + inc);
 	}
 	
