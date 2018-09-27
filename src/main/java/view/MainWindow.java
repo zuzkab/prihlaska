@@ -1,6 +1,9 @@
 package view;
 
+import java.awt.Component;
 import java.awt.EventQueue;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.Properties;
 
 import javax.swing.BorderFactory;
@@ -18,12 +21,16 @@ import org.jdatepicker.impl.UtilDateModel;
 public class MainWindow {
 
 	private JFrame frame;
+	private JPanel panel;
 	private JTextField textField;
 	private JTextField textField_1;
 	private JTextField textField_2;
 	private JTextField textField_3;
 	private JTextField textField_4;
 	private JTextField textField_5;
+	private JPanel panel_3;
+	private JPanel panel_4;
+	private JButton btnAddGuest;
 
 	/**
 	 * Launch the application.
@@ -57,7 +64,7 @@ public class MainWindow {
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.getContentPane().setLayout(null);
 
-		JPanel panel = new JPanel();
+		panel = new JPanel();
 		panel.setBounds(12, 12, 576, 32);
 		frame.getContentPane().add(panel);
 
@@ -130,7 +137,7 @@ public class MainWindow {
 		chckbxOnlinePayment.setBounds(21, 61, 158, 23);
 		panel_2.add(chckbxOnlinePayment);
 
-		JPanel panel_3 = new JPanel();
+		panel_3 = new JPanel();
 		panel_3.setBorder(BorderFactory.createTitledBorder("Guest info"));
 		panel_3.setBounds(12, 267, 576, 95);
 		frame.getContentPane().add(panel_3);
@@ -154,12 +161,17 @@ public class MainWindow {
 		textField_5.setColumns(10);
 		panel_3.add(textField_5);
 
-		JButton btnAddGuest = new JButton("Add guest");
+		btnAddGuest = new JButton("Add guest");
+		btnAddGuest.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				addGuestRow();
+			}
+		});
 		btnAddGuest.setBounds(412, 60, 106, 25);
 		panel_3.add(btnAddGuest);
 
-		JPanel panel_4 = new JPanel();
-		panel_4.setBounds(12, 371, 576, 30);
+		panel_4 = new JPanel();
+		panel_4.setBounds(12, panel_3.getY() + panel_3.getHeight() + 10, 576, 30);
 		panel_4.setLayout(null);
 		frame.getContentPane().add(panel_4);
 
@@ -178,5 +190,64 @@ public class MainWindow {
 		btnSave.setSize(68, 25);
 		btnSave.setBounds(btnValidate.getX() - btnSave.getWidth() - 5, 0, btnSave.getWidth(), btnSave.getHeight());
 		panel_4.add(btnSave);
+	}
+	
+	private void addGuestRow() {
+		int newY = getNewVerticalPosition();
+		updateForm(25 + 5);
+		
+		panel_3.add(getGuestNameLabel(newY));
+		panel_3.add(getGuestNameTextField(newY));
+		panel_3.add(getGuestSurnameLabel(newY));
+		panel_3.add(getGuestSurnameTextField(newY));
+	}
+	
+	private int getNewVerticalPosition() {
+		Component lastRowComp = panel_3.getComponent(panel_3.getComponentCount() - 2);
+		return lastRowComp.getY() + lastRowComp.getHeight() + 5;
+	}
+	
+	private void updateForm(int rowHeight) {
+		increasePanelsHeight(rowHeight);
+		adjustPositioning(rowHeight);
+	}
+	
+	private void increasePanelsHeight(int inc) {
+		panel_3.setSize(panel_3.getWidth(), panel_3.getHeight() + inc);
+	}
+	
+	private void adjustPositioning(int inc) {
+		panel_4.setBounds(panel_4.getX(), panel_4.getY() + inc, panel_4.getWidth(), panel_4.getHeight());
+		btnAddGuest.setBounds(btnAddGuest.getX(), btnAddGuest.getY() + inc, btnAddGuest.getWidth(), btnAddGuest.getHeight());
+	}
+	
+	private JLabel getGuestNameLabel(int yOffset) {
+		return getLabel(25, yOffset, "Name");
+	}
+	
+	private JTextField getGuestNameTextField(int yOffset) {
+		return getTextField(110, yOffset);
+	}
+	
+	private JLabel getGuestSurnameLabel(int yOffset) {
+		return getLabel(280, yOffset, "Surname");
+	}
+	
+	private JTextField getGuestSurnameTextField(int yOffset) {
+		return getTextField(389, yOffset);
+	}
+	
+	private JLabel getLabel(int xOffset, int yOffset, String name) {
+		JLabel label = new JLabel(name);
+		label.setBounds(xOffset, yOffset, 70, 25);
+		
+		return label;
+	}
+	
+	private JTextField getTextField(int xOffset, int yOffset) {
+		JTextField textField = new JTextField();
+		textField.setBounds(xOffset, yOffset, 130, 25);
+		
+		return textField;
 	}
 }
