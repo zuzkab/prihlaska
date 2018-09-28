@@ -4,8 +4,8 @@ import java.awt.Component;
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
 import java.util.Properties;
-
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -13,10 +13,11 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
-
 import org.jdatepicker.impl.JDatePanelImpl;
 import org.jdatepicker.impl.JDatePickerImpl;
 import org.jdatepicker.impl.UtilDateModel;
+
+import transformation.TransformationXMLToHTML;
 
 public class MainWindow {
 
@@ -178,6 +179,15 @@ public class MainWindow {
 		JButton btnShow = new JButton("Show");
 		btnShow.setSize(73, 25);
 		btnShow.setBounds(panel_4.getWidth() - btnShow.getWidth() - 2, 0, btnShow.getWidth(), btnShow.getHeight());
+		btnShow.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				//File xmlFile = getXMLFile();
+				
+				ClassLoader classLoader = new TransformationXMLToHTML().getClass().getClassLoader(); 
+				File xmlFile = new File(classLoader.getResource("ReservationExample.xml").getFile());
+				TransformationXMLToHTML.transformXMLToHTML(xmlFile);
+			}
+		});
 		panel_4.add(btnShow);
 
 		JButton btnValidate = new JButton("Validate");
