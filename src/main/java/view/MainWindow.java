@@ -6,13 +6,16 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.util.Properties;
+
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
+
 import org.jdatepicker.impl.JDatePanelImpl;
 import org.jdatepicker.impl.JDatePickerImpl;
 import org.jdatepicker.impl.UtilDateModel;
@@ -32,6 +35,8 @@ public class MainWindow {
 	private JPanel panel_3;
 	private JPanel panel_4;
 	private JButton btnAddGuest;
+
+	private static final String[] TYPES = new String[] { "Child", "Adult", "Senior" };
 
 	/**
 	 * Launch the application.
@@ -61,7 +66,7 @@ public class MainWindow {
 	 */
 	private void initialize() {
 		frame = new JFrame();
-		frame.setBounds(100, 100, 570, 450);
+		frame.setBounds(100, 100, 570, 482);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.getContentPane().setLayout(null);
 
@@ -105,6 +110,14 @@ public class MainWindow {
 		textField_2.setColumns(10);
 		panel_1.add(textField_2);
 
+		JLabel label_7 = new JLabel("Type:");
+		label_7.setBounds(280, 60, 70, 25);
+		panel_1.add(label_7);
+
+		JComboBox comboBox = new JComboBox(TYPES);
+		comboBox.setBounds(389, 60, 129, 25);
+		panel_1.add(comboBox);
+
 		JPanel panel_2 = new JPanel();
 		panel_2.setBorder(BorderFactory.createTitledBorder("Course info"));
 		panel_2.setBounds(12, 160, 544, 95);
@@ -122,7 +135,7 @@ public class MainWindow {
 		p.put("text.year", "Year");
 		JDatePanelImpl datePanel = new JDatePanelImpl(model, p);
 		JDatePickerImpl datePicker = new JDatePickerImpl(datePanel, new DateLabelFormatter());
-		datePicker.setBounds(110, 28, 130, 25);
+		datePicker.setBounds(110, 28, 129, 25);
 		panel_2.add(datePicker);
 
 		JLabel label_4 = new JLabel("Time:");
@@ -140,7 +153,7 @@ public class MainWindow {
 
 		panel_3 = new JPanel();
 		panel_3.setBorder(BorderFactory.createTitledBorder("Guest info"));
-		panel_3.setBounds(12, 267, 544, 95);
+		panel_3.setBounds(12, 267, 544, 127);
 		frame.getContentPane().add(panel_3);
 		panel_3.setLayout(null);
 
@@ -162,13 +175,21 @@ public class MainWindow {
 		textField_5.setColumns(10);
 		panel_3.add(textField_5);
 
+		JLabel label_8 = new JLabel("Type:");
+		label_8.setBounds(25, 60, 70, 25);
+		panel_3.add(label_8);
+
+		JComboBox comboBox_1 = new JComboBox(TYPES);
+		comboBox_1.setBounds(110, 60, 130, 25);
+		panel_3.add(comboBox_1);
+
 		btnAddGuest = new JButton("Add guest");
 		btnAddGuest.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				addGuestRow();
 			}
 		});
-		btnAddGuest.setBounds(412, 60, 106, 25);
+		btnAddGuest.setBounds(412, 92, 106, 25);
 		panel_3.add(btnAddGuest);
 
 		panel_4 = new JPanel();
@@ -181,9 +202,9 @@ public class MainWindow {
 		btnShow.setBounds(panel_4.getWidth() - btnShow.getWidth() - 2, 0, btnShow.getWidth(), btnShow.getHeight());
 		btnShow.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				//File xmlFile = getXMLFile();
-				
-				ClassLoader classLoader = new TransformationXMLToHTML().getClass().getClassLoader(); 
+				// File xmlFile = getXMLFile();
+
+				ClassLoader classLoader = new TransformationXMLToHTML().getClass().getClassLoader();
 				File xmlFile = new File(classLoader.getResource("ReservationExample.xml").getFile());
 				TransformationXMLToHTML.transformXMLToHTML(xmlFile);
 			}
@@ -201,64 +222,82 @@ public class MainWindow {
 		btnSave.setBounds(btnValidate.getX() - btnSave.getWidth() - 5, 0, btnSave.getWidth(), btnSave.getHeight());
 		panel_4.add(btnSave);
 	}
-	
+
 	private void addGuestRow() {
 		int newY = getNewVerticalPosition();
-		updateForm(25 + 5);
-		
+		updateForm(55 + 15);
+
 		panel_3.add(getGuestNameLabel(newY));
 		panel_3.add(getGuestNameTextField(newY));
 		panel_3.add(getGuestSurnameLabel(newY));
 		panel_3.add(getGuestSurnameTextField(newY));
+		panel_3.add(getGuestTypeLabel(newY + 25 + 5));
+		panel_3.add(getGuestTypeComboBox(newY + 25 + 5));
 	}
-	
+
 	private int getNewVerticalPosition() {
 		Component lastRowComp = panel_3.getComponent(panel_3.getComponentCount() - 2);
-		return lastRowComp.getY() + lastRowComp.getHeight() + 5;
+		return lastRowComp.getY() + lastRowComp.getHeight() + 15;
 	}
-	
+
 	private void updateForm(int rowHeight) {
 		increasePanelsHeight(rowHeight);
 		adjustPositioning(rowHeight);
 	}
-	
+
 	private void increasePanelsHeight(int inc) {
 		frame.setSize(frame.getWidth(), frame.getHeight() + inc);
 		panel_3.setSize(panel_3.getWidth(), panel_3.getHeight() + inc);
 	}
-	
+
 	private void adjustPositioning(int inc) {
 		panel_4.setBounds(panel_4.getX(), panel_4.getY() + inc, panel_4.getWidth(), panel_4.getHeight());
-		btnAddGuest.setBounds(btnAddGuest.getX(), btnAddGuest.getY() + inc, btnAddGuest.getWidth(), btnAddGuest.getHeight());
+		btnAddGuest.setBounds(btnAddGuest.getX(), btnAddGuest.getY() + inc, btnAddGuest.getWidth(),
+				btnAddGuest.getHeight());
 	}
-	
+
 	private JLabel getGuestNameLabel(int yOffset) {
 		return getLabel(25, yOffset, "Name:");
 	}
-	
+
 	private JTextField getGuestNameTextField(int yOffset) {
 		return getTextField(110, yOffset);
 	}
-	
+
 	private JLabel getGuestSurnameLabel(int yOffset) {
 		return getLabel(280, yOffset, "Surname:");
 	}
-	
+
 	private JTextField getGuestSurnameTextField(int yOffset) {
 		return getTextField(389, yOffset);
 	}
-	
+
+	private JLabel getGuestTypeLabel(int yOffset) {
+		return getLabel(25, yOffset, "Type:");
+	}
+
+	private JComboBox<String> getGuestTypeComboBox(int yOffset) {
+		return getComboBox(110, yOffset);
+	}
+
 	private JLabel getLabel(int xOffset, int yOffset, String name) {
 		JLabel label = new JLabel(name);
 		label.setBounds(xOffset, yOffset, 70, 25);
-		
+
 		return label;
 	}
-	
+
 	private JTextField getTextField(int xOffset, int yOffset) {
 		JTextField textField = new JTextField();
 		textField.setBounds(xOffset, yOffset, 130, 25);
-		
+
 		return textField;
+	}
+
+	private JComboBox<String> getComboBox(int xOffset, int yOffset) {
+		JComboBox<String> comboBox = new JComboBox<>(TYPES);
+		comboBox.setBounds(xOffset, yOffset, 129, 25);
+
+		return comboBox;
 	}
 }
