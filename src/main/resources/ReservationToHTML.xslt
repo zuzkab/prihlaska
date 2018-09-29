@@ -38,6 +38,7 @@
         }
 
         .labelSecondCol {
+            text-align: left;
             width: 109px;
         }
 
@@ -88,6 +89,17 @@
                             <input type="text">
                                 <xsl:attribute name="value">
                                     <xsl:value-of select="buyer/email"/>
+                                </xsl:attribute>
+                                <xsl:attribute name="disabled">true</xsl:attribute>
+                            </input>
+                        </td>
+                        <td class="labelSecondCol">
+                            <label>Type:</label>
+                        </td>
+                        <td class="inputBoxCol">
+                            <input type="text">
+                                <xsl:attribute name="value">
+                                    <xsl:value-of select="buyer/@type"/>
                                 </xsl:attribute>
                                 <xsl:attribute name="disabled">true</xsl:attribute>
                             </input>
@@ -165,6 +177,20 @@
                             </input>
                             </td>
                         </tr>
+                        <tr>
+                            <td class="labelFirstCol">
+                                <label>Type:</label>
+                            </td>
+                            <td class="inputBoxCol">
+                                <input type="text">
+                                    <xsl:attribute name="value">
+                                        <xsl:value-of select="@type"/>
+                                    </xsl:attribute>
+                                    <xsl:attribute name="disabled">true</xsl:attribute>
+                                </input>
+                            </td>
+                        </tr>
+                        <tr height="10"></tr>
                     </xsl:for-each>
                 </table>
             </fieldset>
