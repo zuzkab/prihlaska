@@ -41,7 +41,7 @@ public class FileSaver {
 		}
 		
 		switch (fileType) {
-        case "HTML":  openHTMLFile(selectedFile.getAbsolutePath());
+        case "html":  openHTMLFile(selectedFile.getAbsolutePath());
                  break;
 		}
 	}
@@ -49,7 +49,8 @@ public class FileSaver {
 	public static void openHTMLFile(String filePath) {
 		try {
 			  Desktop desktop = java.awt.Desktop.getDesktop();
-			  URI URL = new URI(filePath);
+			  File file = new File(filePath);
+			  URI URL = file.toURI();
 			  desktop.browse(URL);
 			} catch (Exception e) {
 			  e.printStackTrace();
