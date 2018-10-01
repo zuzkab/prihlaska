@@ -5,6 +5,7 @@ import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.io.StringWriter;
 import java.util.Properties;
 
 import javax.swing.BorderFactory;
@@ -13,6 +14,7 @@ import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 
@@ -21,6 +23,7 @@ import org.jdatepicker.impl.JDatePickerImpl;
 import org.jdatepicker.impl.UtilDateModel;
 
 import transformation.TransformationXMLToHTML;
+import validation.ValidationXML;
 
 public class MainWindow {
 
@@ -215,6 +218,26 @@ public class MainWindow {
 		btnValidate.setSize(93, 25);
 		btnValidate.setBounds(btnShow.getX() - btnValidate.getWidth() - 5, 0, btnValidate.getWidth(),
 				btnValidate.getHeight());
+		btnValidate.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				// File xmlFile = getXMLFile();
+
+				ClassLoader classLoader = new TransformationXMLToHTML().getClass().getClassLoader();
+				File xmlFile = new File(classLoader.getResource("ReservationExampleError.xml").getFile());
+				StringWriter sw = ValidationXML.validateXML(xmlFile);
+				
+				if (sw.toString().isEmpty()) {
+					JOptionPane.showMessageDialog(frame,
+						    "XML file is valid against XML Schema.", "Validation Successful", 
+						    JOptionPane.INFORMATION_MESSAGE);
+				} else {
+					JOptionPane.showMessageDialog(frame,
+						    sw.toString(),
+						    "Validation failed",
+						    JOptionPane.ERROR_MESSAGE);
+				}
+			}
+		});
 		panel_4.add(btnValidate);
 
 		JButton btnSave = new JButton("Save");
