@@ -17,7 +17,7 @@ import org.xml.sax.SAXParseException;
 public class ValidationXML {
 	private static String xsdFileName = "ReservationSchema.xsd";
 
-	public static StringWriter validateXML(File xmlFile) {
+	public static StringWriter validateXML(String xmlFile) {
 		ClassLoader classLoader = new ValidationXML().getClass().getClassLoader(); 
 		SchemaFactory factory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
 		Schema schema = null;

@@ -22,6 +22,7 @@ import org.jdatepicker.impl.JDatePanelImpl;
 import org.jdatepicker.impl.JDatePickerImpl;
 import org.jdatepicker.impl.UtilDateModel;
 
+import createXml.CreateXML;
 import transformation.TransformationXMLToHTML;
 import validation.ValidationXML;
 
@@ -199,16 +200,67 @@ public class MainWindow {
 		panel_4.setBounds(12, panel_3.getY() + panel_3.getHeight() + 10, 544, 30);
 		panel_4.setLayout(null);
 		frame.getContentPane().add(panel_4);
+		
+		JButton btnGenerateXML = new JButton("Generate XML");
+		btnGenerateXML.setSize(120, 25);
+		btnGenerateXML.setBounds(298 - btnGenerateXML.getWidth() - 5, 0, btnGenerateXML.getWidth(),
+				btnGenerateXML.getHeight());
+		btnGenerateXML.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				
+				System.out.println("kliknute");
+				
+				String name = textField.getText();
+				String surname = textField_1.getText();
+				String email = textField_2.getText();
+				String type = comboBox.getSelectedItem().toString();
+				
+				String date = "later";
+				String time = textField_3.getText();
+				String onlinePay;
+				if (chckbxOnlinePayment.isSelected()) {
+					onlinePay = "true";
+				}
+				else {
+					onlinePay = "false";
+				}
+				
+				String guestName = textField_4.getText();
+				String guestSurname = textField_5.getText();
+				String guestType = comboBox_1.getSelectedItem().toString();
+				
+				String xmlString = CreateXML.generateXML(name, surname, email, type, date, time, onlinePay, guestName, guestSurname, guestType);
+				
+			}
+		});
+		panel_4.add(btnGenerateXML);
 
 		JButton btnShow = new JButton("Show");
 		btnShow.setSize(73, 25);
 		btnShow.setBounds(panel_4.getWidth() - btnShow.getWidth() - 2, 0, btnShow.getWidth(), btnShow.getHeight());
 		btnShow.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				// File xmlFile = getXMLFile();
-
-				ClassLoader classLoader = new TransformationXMLToHTML().getClass().getClassLoader();
-				File xmlFile = new File(classLoader.getResource("ReservationExample.xml").getFile());
+				String name = textField.getText();
+				String surname = textField_1.getText();
+				String email = textField_2.getText();
+				String type = comboBox.getSelectedItem().toString();
+				
+				String date = "later";
+				String time = textField_3.getText();
+				String onlinePay;
+				if (chckbxOnlinePayment.isSelected()) {
+					onlinePay = "true";
+				}
+				else {
+					onlinePay = "false";
+				}
+				
+				String guestName = textField_4.getText();
+				String guestSurname = textField_5.getText();
+				String guestType = comboBox_1.getSelectedItem().toString();
+				
+				String xmlFile = CreateXML.generateXML(name, surname, email, type, date, time, onlinePay, guestName, guestSurname, guestType);
+				
 				TransformationXMLToHTML.transformXMLToHTML(xmlFile);
 			}
 		});
@@ -220,10 +272,27 @@ public class MainWindow {
 				btnValidate.getHeight());
 		btnValidate.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				// File xmlFile = getXMLFile();
-
-				ClassLoader classLoader = new TransformationXMLToHTML().getClass().getClassLoader();
-				File xmlFile = new File(classLoader.getResource("ReservationExampleError.xml").getFile());
+				String name = textField.getText();
+				String surname = textField_1.getText();
+				String email = textField_2.getText();
+				String type = comboBox.getSelectedItem().toString();
+				
+				String date = "later";
+				String time = textField_3.getText();
+				String onlinePay;
+				if (chckbxOnlinePayment.isSelected()) {
+					onlinePay = "true";
+				}
+				else {
+					onlinePay = "false";
+				}
+				
+				String guestName = textField_4.getText();
+				String guestSurname = textField_5.getText();
+				String guestType = comboBox_1.getSelectedItem().toString();
+				
+				String xmlFile = CreateXML.generateXML(name, surname, email, type, date, time, onlinePay, guestName, guestSurname, guestType);
+				
 				StringWriter sw = ValidationXML.validateXML(xmlFile);
 				
 				if (sw.toString().isEmpty()) {
@@ -239,6 +308,7 @@ public class MainWindow {
 			}
 		});
 		panel_4.add(btnValidate);
+		
 
 		JButton btnSave = new JButton("Save");
 		btnSave.setSize(68, 25);

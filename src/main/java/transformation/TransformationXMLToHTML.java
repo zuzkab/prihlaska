@@ -17,7 +17,7 @@ import savingFile.FileSaver;
 public class TransformationXMLToHTML {
 	private static String xsltFileName = "ReservationToHTML.xslt";
 
-	public static void transformXMLToHTML(File xmlFile) {
+	public static void transformXMLToHTML(String xmlFile) {
 		Source xml = new StreamSource(xmlFile);
 		ClassLoader classLoader = new TransformationXMLToHTML().getClass().getClassLoader(); 
 		Source xslt = new StreamSource(new File(classLoader.getResource(xsltFileName).getFile()));
