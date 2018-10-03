@@ -1,0 +1,20 @@
+<registration>
+
+	
+	<course>
+		<date>18.11.2018</date>
+		<time>1500:00</time>
+		<onlinepayment>true</onlinepayment>
+	</course>
+	
+	<guests>
+		<guest type="child">
+			<name>Eduard</name>
+			<surname>Biely</surname>
+		</guest>
+		<guest>
+			<name>Marta</name>
+			<surname>Biela</surname>
+		</guest>
+	</guests>
+</registration>

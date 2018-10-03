@@ -23,6 +23,7 @@ import org.jdatepicker.impl.JDatePickerImpl;
 import org.jdatepicker.impl.UtilDateModel;
 
 import createXml.CreateXML;
+import savingFile.FileSaver;
 import transformation.TransformationXMLToHTML;
 
 public class MainWindow {
@@ -215,6 +216,7 @@ public class MainWindow {
 				String date = datePicker.getJFormattedTextField().getText();
 				String time = textField_3.getText();
 				String onlinePay;
+				
 				if (chckbxOnlinePayment.isSelected()) {
 					onlinePay = "true";
 				}
@@ -226,8 +228,7 @@ public class MainWindow {
 				String guestSurname = textField_5.getText();
 				String guestType = comboBox_1.getSelectedItem().toString();
 				
-				String xml = CreateXML.generateXML(name, surname, email, type, date, time, onlinePay, guestName, guestSurname, guestType);
-				
+				String xml = CreateXML.generateXML(name, surname, email, type, date, time, onlinePay, guestName, guestSurname, guestType);								
 			}
 		});
 		panel_4.add(btnGenerateXML);

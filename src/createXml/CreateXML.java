@@ -119,8 +119,8 @@ public class CreateXML {
 	        		TransformerFactory transformerFactory = TransformerFactory.newInstance();
 	        		Transformer transformer = transformerFactory.newTransformer();
 	        		DOMSource source = new DOMSource(doc);
-	        		StreamResult result = new StreamResult(new File("C:\\Users\\PC\\Documents\\registration.xml"));
-	        		transformer.transform(source, result);
+	        		//StreamResult result = new StreamResult(new File("C:\\Users\\PC\\Documents\\registration.xml"));
+	        		//transformer.transform(source, result);
 	          
 	        		// Output to console for testing
 	        		StreamResult res = new StreamResult(System.out);
@@ -142,6 +142,8 @@ public class CreateXML {
 	        	    Transformer tf = tFactory.newTransformer();
 	        	    tf.transform(source,output);
 	        	    strResult = writer.toString();
+	        	    
+	        	    FileSaver.saveFile(writer, new String("xml"));
 	        		
 	        		
 	        	}

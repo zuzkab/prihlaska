@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" version="1.0" elementFormDefault="qualified">
+	<xsd:element name="registration" type="registrationType"/>
+
+	<xsd:complexType name="registrationType">
+		<xsd:sequence>		
+			<xsd:element name="buyer" type="buyerType"/>	
+			<xsd:element name="course" type="courseType"/>			
+			<xsd:element name="guests" minOccurs="0" maxOccurs="1" type="guestsType"/>		
+		</xsd:sequence>
+	</xsd:complexType>
+	
+	<xsd:complexType name="buyerType">
+	   	<xsd:sequence>
+			<xsd:element name="name" type="xsd:string"/>
+			<xsd:element name="surname" type="xsd:string"/>
+			<xsd:element name="email">
+				<xsd:simpleType> 
+					<xsd:restriction base="xsd:string"> 
+	   					<xsd:pattern value=".+\@.+\..+"/> 
+				    </xsd:restriction> 
+			  	</xsd:simpleType>
+	   		</xsd:element>
+	   	</xsd:sequence>
+	  	<xsd:attribute name="type" type="guestType" use="required"/>
+	</xsd:complexType>
+	
+	<xsd:simpleType name="guestType">
+    	<xsd:restriction base="xsd:string">
+      		<xsd:enumeration value="Child"/>
+      		<xsd:enumeration value="Adult"/>
+      		<xsd:enumeration value="Senior"/>
+    	</xsd:restriction>
+  	</xsd:simpleType>
+	
+	<xsd:complexType name="courseType">
+	   	<xsd:sequence>
+	   		<xsd:element name="date" type="xsd:date"/>
+	   		<xsd:element name="time" type="xsd:time"/>
+	   		<xsd:element name="onlinepayment" type="xsd:boolean"/>
+	   	</xsd:sequence>
+	</xsd:complexType>
+
+	<xsd:complexType name="guestsType">
+		<xsd:sequence>
+		
+			<xsd:element name="guest" minOccurs="1" maxOccurs="7">	
+					
+				<xsd:complexType>
+			    	<xsd:sequence>
+			      		<xsd:element name="name" type="xsd:string"/>
+			      		<xsd:element name="surname" type="xsd:string"/>
+			    	</xsd:sequence>
+			    	<xsd:attribute name="type" type="guestType" use="required"/>	
+			  	</xsd:complexType>
+			  	
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:complexType>
+</xsd:schema>
