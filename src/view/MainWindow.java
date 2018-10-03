@@ -202,19 +202,17 @@ public class MainWindow {
 		
 		JButton btnGenerateXML = new JButton("Generate XML");
 		btnGenerateXML.setSize(120, 25);
-		btnGenerateXML.setBounds(298 - btnGenerateXML.getWidth() - 5, 0, btnGenerateXML.getWidth(),
+		btnGenerateXML.setBounds(371 - btnGenerateXML.getWidth() - 5, 0, btnGenerateXML.getWidth(),
 				btnGenerateXML.getHeight());
 		btnGenerateXML.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				
-				System.out.println("kliknute");
-				
+								
 				String name = textField.getText();
 				String surname = textField_1.getText();
 				String email = textField_2.getText();
 				String type = comboBox.getSelectedItem().toString();
 				
-				String date = "later";
+				String date = datePicker.getJFormattedTextField().getText();
 				String time = textField_3.getText();
 				String onlinePay;
 				if (chckbxOnlinePayment.isSelected()) {
@@ -228,7 +226,7 @@ public class MainWindow {
 				String guestSurname = textField_5.getText();
 				String guestType = comboBox_1.getSelectedItem().toString();
 				
-				StringWriter sw = CreateXML.generateXML(name, surname, email, type, date, time, onlinePay, guestName, guestSurname, guestType);
+				String xml = CreateXML.generateXML(name, surname, email, type, date, time, onlinePay, guestName, guestSurname, guestType);
 				
 			}
 		});
@@ -261,10 +259,6 @@ public class MainWindow {
 		panel_4.add(btnValidate);
 		
 
-		JButton btnSave = new JButton("Save");
-		btnSave.setSize(68, 25);
-		btnSave.setBounds(btnValidate.getX() - btnSave.getWidth() - 5, 0, btnSave.getWidth(), btnSave.getHeight());
-		panel_4.add(btnSave);
 	}
 
 	private void addGuestRow() {

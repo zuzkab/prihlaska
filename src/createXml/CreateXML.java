@@ -1,6 +1,8 @@
 package createXml;
 
 import java.awt.EventQueue;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.StringWriter;
@@ -35,11 +37,12 @@ import view.MainWindow;
 
 public class CreateXML {
 	
-	public static StringWriter generateXML(String name, String surname, String email, String type, String date, String time, String onlinePay, String guestName, String guestSurname, String guestType) {
+	public static String generateXML(String name, String surname, String email, String type, String date, String time, String onlinePay, String guestName, String guestSurname, String guestType) {
 		
 		ClassLoader classLoader = new CreateXML().getClass().getClassLoader(); 
 		StringWriter sw = new StringWriter();
-		sw = null;
+		String strResult = new String();
+		
 
 		try {
 			
@@ -123,19 +126,36 @@ public class CreateXML {
 	        		StreamResult res = new StreamResult(System.out);
 	        		transformer.transform(source, res);
 	        		transformer.transform(source, new StreamResult(sw));
-	        		FileSaver.saveFile(sw, new String("xmlFile"));
+	        		
+	        		
+	        		
+	        		ByteArrayOutputStream out = new ByteArrayOutputStream();
+	        		res.setOutputStream(out);
+	        		transformer.transform(source, res);
+	        		ByteArrayInputStream in = new ByteArrayInputStream(out.toByteArray());
+	        		StreamSource streamSource = new StreamSource(in);
+	        			        		
+	        		
+	        	    StringWriter writer = new StringWriter();
+	        	    StreamResult output = new StreamResult(writer);
+	        	    TransformerFactory tFactory = TransformerFactory.newInstance();
+	        	    Transformer tf = tFactory.newTransformer();
+	        	    tf.transform(source,output);
+	        	    strResult = writer.toString();
 	        		
 	        		
 	        	}
 	        	
 	        	catch (Exception e) {
-	        		System.out.println();
+	        		
 	        		System.out.println(e.getStackTrace().toString());
 	        	}
 	        	
 	          
+			System.out.println("STRING:");
+			System.out.println(strResult);
 	        	
-	        return sw;
+	        return strResult;
 	        	
 
 	}
