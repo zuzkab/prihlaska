@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.io.StringWriter;
 import java.text.Normalizer.Form;
 import java.util.LinkedList;
+import java.util.List;
 
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -30,6 +31,8 @@ import org.xml.sax.ErrorHandler;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 
+import model.Guest;
+
 import java.io.File;
 import savingFile.FileSaver;
 import view.DateLabelFormatter;
@@ -37,7 +40,7 @@ import view.MainWindow;
 
 public class CreateXML {
 	
-	public static String generateXML(String name, String surname, String email, String type, String date, String time, String onlinePay, String guestName, String guestSurname, String guestType) {
+	public static String generateXML(String name, String surname, String email, String type, String date, String time, String onlinePay, List<Guest> guestsList) {
 		
 		ClassLoader classLoader = new CreateXML().getClass().getClassLoader(); 
 		StringWriter sw = new StringWriter();
@@ -67,8 +70,32 @@ public class CreateXML {
 	    	rootElement.appendChild(course);
 	          
 	        // parent element guests
-	        Element guests = doc.createElement("guests");
-	        rootElement.appendChild(guests);
+            if (!guestsList.isEmpty()) {
+                Element guests = doc.createElement("guests");
+	            rootElement.appendChild(guests);
+
+                //  guests
+                for(Guest eguest: guestsList) {
+                    Element guest = doc.createElement("guest");
+                    guests.appendChild(guest);
+                    
+                    Element gName = doc.createElement("name");
+                    gName.appendChild(doc.createTextNode(eguest.getName()));
+                    guest.appendChild(gName);
+
+                    Element gSurname = doc.createElement("surname");
+                    gSurname.appendChild(doc.createTextNode(eguest.getSurname()));
+                    guest.appendChild(gSurname);
+                    
+                    Attr attr = doc.createAttribute("type");
+	        	    attr.setValue(eguest.getType());
+	        	    guest.setAttributeNode(attr);
+	        	    
+
+                }
+	        	
+            }
+	        
 
 	        	// setting attribute to element
 	        	Attr attr = doc.createAttribute("type");
@@ -101,26 +128,13 @@ public class CreateXML {
 	        	onlinePayment.appendChild(doc.createTextNode(onlinePay));
 	        	course.appendChild(onlinePayment);
 	        	
-	        	//  guests
-	        	Element gName = doc.createElement("name");
-	        	gName.appendChild(doc.createTextNode(guestName));
-	        	guests.appendChild(gName);
-
-	        	Element gSurname = doc.createElement("surname");
-	        	gSurname.appendChild(doc.createTextNode(guestSurname));
-	        	guests.appendChild(gSurname);
-	        	
-	        	Element gType = doc.createElement("type");
-	        	gType.appendChild(doc.createTextNode(guestType));
-	        	guests.appendChild(gType);
-
 	        	
 	        		// write the content into xml file
 	        		TransformerFactory transformerFactory = TransformerFactory.newInstance();
 	        		Transformer transformer = transformerFactory.newTransformer();
 	        		DOMSource source = new DOMSource(doc);
-	        		StreamResult result = new StreamResult(new File("C:\\Users\\zuzanab\\Documents\\registration.xml"));
-	        		transformer.transform(source, result);
+	        		//StreamResult result = new StreamResult(new File("C:\\Users\\zuzanab\\Documents\\registration.xml"));
+	        		//transformer.transform(source, result);
 	          
 	        		// Output to console for testing
 	        		StreamResult res = new StreamResult(System.out);
@@ -143,7 +157,8 @@ public class CreateXML {
 	        	    tf.transform(source,output);
 	        	    strResult = writer.toString();
 	        		
-	        		
+                    FileSaver.saveFile(writer, new String("xml"));
+
 	        	}
 	        	
 	        	catch (Exception e) {
