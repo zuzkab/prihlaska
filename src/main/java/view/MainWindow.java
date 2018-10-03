@@ -4,8 +4,9 @@ import java.awt.Component;
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.File;
 import java.io.StringWriter;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 
 import javax.swing.BorderFactory;
@@ -23,6 +24,7 @@ import org.jdatepicker.impl.JDatePickerImpl;
 import org.jdatepicker.impl.UtilDateModel;
 
 import createXml.CreateXML;
+import model.Guest;
 import transformation.TransformationXMLToHTML;
 import validation.ValidationXML;
 
@@ -39,6 +41,11 @@ public class MainWindow {
 	private JPanel panel_3;
 	private JPanel panel_4;
 	private JButton btnAddGuest;
+	private List<Guest> guests;
+	
+	List<JTextField> guestNames = new ArrayList<>();
+	List<JTextField> guestSurnames = new ArrayList<>();
+	List<JComboBox<String>> guestTypes = new ArrayList<>();
 
 	private static final String[] TYPES = new String[] { "Child", "Adult", "Senior" };
 
@@ -216,6 +223,28 @@ public class MainWindow {
 				String date = datePicker.getJFormattedTextField().getText();
 				String time = textField_3.getText();
 				String onlinePay;
+				
+				List<Guest> guests = new ArrayList<>();
+				
+				Guest gfirst = new Guest();
+				
+				gfirst.setName(textField_4.getText());
+				gfirst.setSurname(textField_5.getText());
+				gfirst.setType(comboBox_1.getSelectedItem().toString());
+				
+				guests.add(gfirst);
+				
+				for (int i = 0; i < guestNames.size(); i++) {
+					Guest g = new Guest();
+					
+					g.setName(guestNames.get(i).getText());
+					g.setSurname(guestSurnames.get(i).getText());
+					g.setType(guestTypes.get(i).getSelectedItem().toString());
+					
+					guests.add(g);
+					
+				}
+				
 				if (chckbxOnlinePayment.isSelected()) {
 					onlinePay = "true";
 				}
@@ -227,7 +256,7 @@ public class MainWindow {
 				String guestSurname = textField_5.getText();
 				String guestType = comboBox_1.getSelectedItem().toString();
 				
-				String xml = CreateXML.generateXML(name, surname, email, type, date, time, onlinePay, guestName, guestSurname, guestType);
+				String xml = CreateXML.generateXML(name, surname, email, type, date, time, onlinePay, guests);
 				
 			}
 		});
@@ -246,6 +275,28 @@ public class MainWindow {
 				String date = datePicker.getJFormattedTextField().getText();
 				String time = textField_3.getText();
 				String onlinePay;
+				
+				List<Guest> guests = new ArrayList<>();
+				
+				Guest gfirst = new Guest();
+				
+				gfirst.setName(textField_4.getText());
+				gfirst.setSurname(textField_5.getText());
+				gfirst.setType(comboBox_1.getSelectedItem().toString());
+				
+				guests.add(gfirst);
+				
+				for (int i = 0; i < guestNames.size(); i++) {
+					Guest g = new Guest();
+					
+					g.setName(guestNames.get(i).getText());
+					g.setSurname(guestSurnames.get(i).getText());
+					g.setType(guestTypes.get(i).getSelectedItem().toString());
+					
+					guests.add(g);
+					
+				}
+				
 				if (chckbxOnlinePayment.isSelected()) {
 					onlinePay = "true";
 				}
@@ -253,11 +304,7 @@ public class MainWindow {
 					onlinePay = "false";
 				}
 				
-				String guestName = textField_4.getText();
-				String guestSurname = textField_5.getText();
-				String guestType = comboBox_1.getSelectedItem().toString();
-				
-				String xmlFile = CreateXML.generateXML(name, surname, email, type, date, time, onlinePay, guestName, guestSurname, guestType);
+				String xmlFile = CreateXML.generateXML(name, surname, email, type, date, time, onlinePay, guests);
 				
 				System.out.println("TEST: " + xmlFile);
 				
@@ -280,6 +327,28 @@ public class MainWindow {
 				String date = datePicker.getJFormattedTextField().getText();
 				String time = textField_3.getText();
 				String onlinePay;
+				
+				List<Guest> guests = new ArrayList<>();
+				
+				Guest gfirst = new Guest();
+				
+				gfirst.setName(textField_4.getText());
+				gfirst.setSurname(textField_5.getText());
+				gfirst.setType(comboBox_1.getSelectedItem().toString());
+				
+				guests.add(gfirst);
+				
+				for (int i = 0; i < guestNames.size(); i++) {
+					Guest g = new Guest();
+					
+					g.setName(guestNames.get(i).getText());
+					g.setSurname(guestSurnames.get(i).getText());
+					g.setType(guestTypes.get(i).getSelectedItem().toString());
+					
+					guests.add(g);
+					
+				}
+				
 				if (chckbxOnlinePayment.isSelected()) {
 					onlinePay = "true";
 				}
@@ -287,11 +356,7 @@ public class MainWindow {
 					onlinePay = "false";
 				}
 				
-				String guestName = textField_4.getText();
-				String guestSurname = textField_5.getText();
-				String guestType = comboBox_1.getSelectedItem().toString();
-				
-				String xmlFile = CreateXML.generateXML(name, surname, email, type, date, time, onlinePay, guestName, guestSurname, guestType);
+				String xmlFile = CreateXML.generateXML(name, surname, email, type, date, time, onlinePay, guests);
 				
 				System.out.println("TEST: " + xmlFile);
 				StringWriter sw = ValidationXML.validateXML(xmlFile);
@@ -315,13 +380,20 @@ public class MainWindow {
 	private void addGuestRow() {
 		int newY = getNewVerticalPosition();
 		updateForm(55 + 15);
+		
+		guestNames.add(getGuestNameTextField(newY));
+		guestSurnames.add(getGuestSurnameTextField(newY));
+		guestTypes.add(getGuestTypeComboBox(newY + 25 + 5));
 
 		panel_3.add(getGuestNameLabel(newY));
-		panel_3.add(getGuestNameTextField(newY));
+//		panel_3.add(getGuestNameTextField(newY));
+		panel_3.add(guestNames.get(guestNames.size() - 1));
 		panel_3.add(getGuestSurnameLabel(newY));
-		panel_3.add(getGuestSurnameTextField(newY));
+//		panel_3.add(getGuestSurnameTextField(newY));
+		panel_3.add(guestSurnames.get(guestSurnames.size() - 1));
 		panel_3.add(getGuestTypeLabel(newY + 25 + 5));
-		panel_3.add(getGuestTypeComboBox(newY + 25 + 5));
+//		panel_3.add(getGuestTypeComboBox(newY + 25 + 5));
+		panel_3.add(guestTypes.get(guestTypes.size() - 1));
 	}
 
 	private int getNewVerticalPosition() {
