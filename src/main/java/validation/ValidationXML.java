@@ -2,6 +2,7 @@ package validation;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.StringReader;
 import java.io.StringWriter;
 import java.util.LinkedList;
 import javax.xml.XMLConstants;
@@ -47,7 +48,7 @@ public class ValidationXML {
 		});
 		
 		try {
-			validator.validate(new StreamSource(xmlFile));
+			validator.validate(new StreamSource(new StringReader(xmlFile)));
 		} catch (SAXException e) {
 			e.printStackTrace();
 		} catch (IOException e) {

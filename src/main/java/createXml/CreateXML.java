@@ -1,6 +1,8 @@
 package createXml;
 
 import java.awt.EventQueue;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.StringWriter;
@@ -39,7 +41,8 @@ public class CreateXML {
 		
 		ClassLoader classLoader = new CreateXML().getClass().getClassLoader(); 
 		StringWriter sw = new StringWriter();
-		sw = null;
+		String strResult = new String();
+		
 
 		try {
 			
@@ -94,7 +97,7 @@ public class CreateXML {
 	        	courseTime.appendChild(doc.createTextNode(time));
 	        	course.appendChild(courseTime);
 	        	
-	        	Element onlinePayment = doc.createElement("onlinePayment");
+	        	Element onlinePayment = doc.createElement("onlinepayment");
 	        	onlinePayment.appendChild(doc.createTextNode(onlinePay));
 	        	course.appendChild(onlinePayment);
 	        	
@@ -116,26 +119,43 @@ public class CreateXML {
 	        		TransformerFactory transformerFactory = TransformerFactory.newInstance();
 	        		Transformer transformer = transformerFactory.newTransformer();
 	        		DOMSource source = new DOMSource(doc);
-	        		StreamResult result = new StreamResult(new File("C:\\Users\\PC\\Documents\\registration.xml"));
+	        		StreamResult result = new StreamResult(new File("C:\\Users\\zuzanab\\Documents\\registration.xml"));
 	        		transformer.transform(source, result);
 	          
 	        		// Output to console for testing
 	        		StreamResult res = new StreamResult(System.out);
 	        		transformer.transform(source, res);
 	        		transformer.transform(source, new StreamResult(sw));
-	        		FileSaver.saveFile(sw, new String("xmlFile"));
+	        		
+	        		
+	        		
+	        		ByteArrayOutputStream out = new ByteArrayOutputStream();
+	        		res.setOutputStream(out);
+	        		transformer.transform(source, res);
+	        		ByteArrayInputStream in = new ByteArrayInputStream(out.toByteArray());
+	        		StreamSource streamSource = new StreamSource(in);
+	        			        		
+	        		
+	        	    StringWriter writer = new StringWriter();
+	        	    StreamResult output = new StreamResult(writer);
+	        	    TransformerFactory tFactory = TransformerFactory.newInstance();
+	        	    Transformer tf = tFactory.newTransformer();
+	        	    tf.transform(source,output);
+	        	    strResult = writer.toString();
 	        		
 	        		
 	        	}
 	        	
 	        	catch (Exception e) {
-	        		System.out.println();
+	        		
 	        		System.out.println(e.getStackTrace().toString());
 	        	}
 	        	
 	          
+			System.out.println("STRING:");
+			System.out.println(strResult);
 	        	
-	        return sw.toString();
+	        return strResult;
 	        	
 
 	}

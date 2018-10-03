@@ -1,6 +1,7 @@
 package transformation;
 
 import java.io.File;
+import java.io.StringReader;
 import java.io.StringWriter;
 
 import javax.xml.transform.Source;
@@ -18,7 +19,7 @@ public class TransformationXMLToHTML {
 	private static String xsltFileName = "ReservationToHTML.xslt";
 
 	public static void transformXMLToHTML(String xmlFile) {
-		Source xml = new StreamSource(xmlFile);
+		Source xml = new StreamSource(new StringReader(xmlFile));
 		ClassLoader classLoader = new TransformationXMLToHTML().getClass().getClassLoader(); 
 		Source xslt = new StreamSource(new File(classLoader.getResource(xsltFileName).getFile()));
 		StringWriter sw = new StringWriter();
