@@ -14,5 +14,17 @@
 	</classpathentry>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.8/"/>
 	<classpathentry kind="con" path="org.eclipse.buildship.core.gradleclasspathcontainer"/>
+	<classpathentry kind="lib" path="C:/Users/zuzanab/Downloads/jsoup-1.8.3-DEE492.jar"/>
+	<classpathentry kind="lib" path="C:/Users/zuzanab/Downloads/JTattoo-1.6.10-DEE492.jar"/>
+	<classpathentry kind="lib" path="C:/Users/zuzanab/Downloads/bcprov-jdk15on-1.54.1-DEE492.jar"/>
+	<classpathentry kind="lib" path="C:/Users/zuzanab/Downloads/bcpkix-jdk15on-1.54.1-DEE492.jar"/>
+	<classpathentry kind="lib" path="C:/Users/zuzanab/Downloads/xmlsec-2.0.6-DEE492.jar"/>
+	<classpathentry kind="lib" path="C:/Users/zuzanab/Downloads/xalan-2.7.2-DEE492.jar"/>
+	<classpathentry kind="lib" path="C:/Users/zuzanab/Downloads/slf4j-api-1.7.10-DEE492.jar"/>
+	<classpathentry kind="lib" path="C:/Users/zuzanab/Downloads/slf4j-simple-1.7.10-DEE492.jar"/>
+	<classpathentry kind="lib" path="C:/Users/zuzanab/Downloads/dsigner-config-2.3-DEE492.jar"/>
+	<classpathentry kind="lib" path="C:/Users/zuzanab/Downloads/dsigner-2.0.0.13-DEE492.jar"/>
+	<classpathentry kind="lib" path="C:/Users/zuzanab/Downloads/dsigner-plugin-xml-2.0.0.13-DEE492.jar"/>
+	<classpathentry kind="lib" path="C:/Users/zuzanab/Downloads/ditecmscapi-1.1-DEE492.jar"/>
 	<classpathentry kind="output" path="bin/default"/>
 </classpath>
