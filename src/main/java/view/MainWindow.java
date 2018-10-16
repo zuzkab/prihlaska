@@ -25,6 +25,7 @@ import org.jdatepicker.impl.UtilDateModel;
 
 import createXml.CreateXML;
 import model.Guest;
+import sign.XMLSigner;
 import transformation.TransformationXMLToHTML;
 import validation.ValidationXML;
 
@@ -207,38 +208,12 @@ public class MainWindow {
 		panel_4.setLayout(null);
 		frame.getContentPane().add(panel_4);
 
-		JButton btnGenerateXML = new JButton("Generate XML");
-		btnGenerateXML.setSize(120, 25);
-		btnGenerateXML.setBounds(371 - btnGenerateXML.getWidth() - 5, 0, btnGenerateXML.getWidth(),
-				btnGenerateXML.getHeight());
-		btnGenerateXML.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				
-				// Buyer info
-				String name = textField.getText();
-				String surname = textField_1.getText();
-				String email = textField_2.getText();
-				String type = comboBox.getSelectedItem().toString();
-
-				// Course info
-				String date = datePicker.getJFormattedTextField().getText();
-				String time = textField_3.getText();
-				String onlinePay = String.valueOf(chckbxOnlinePayment.isSelected());
-
-				// Guest info
-				List<Guest> guests = collectGuests();
-
-				String xml = CreateXML.generateXML(name, surname, email, type, date, time, onlinePay, guests);
-			}
-		});
-		panel_4.add(btnGenerateXML);
-
 		JButton btnShow = new JButton("Show");
 		btnShow.setSize(73, 25);
 		btnShow.setBounds(panel_4.getWidth() - btnShow.getWidth() - 2, 0, btnShow.getWidth(), btnShow.getHeight());
 		btnShow.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				
+
 				// Buyer info
 				String name = textField.getText();
 				String surname = textField_1.getText();
@@ -268,7 +243,7 @@ public class MainWindow {
 				btnValidate.getHeight());
 		btnValidate.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				
+
 				// Buyer info
 				String name = textField.getText();
 				String surname = textField_1.getText();
@@ -297,6 +272,59 @@ public class MainWindow {
 			}
 		});
 		panel_4.add(btnValidate);
+
+		JButton btnGenerateXML = new JButton("Generate XML");
+		btnGenerateXML.setSize(140, 25);
+		btnGenerateXML.setBounds(btnValidate.getX() - btnGenerateXML.getWidth() - 5, 0, btnGenerateXML.getWidth(),
+				btnGenerateXML.getHeight());
+		btnGenerateXML.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+
+				// Buyer info
+				String name = textField.getText();
+				String surname = textField_1.getText();
+				String email = textField_2.getText();
+				String type = comboBox.getSelectedItem().toString();
+
+				// Course info
+				String date = datePicker.getJFormattedTextField().getText();
+				String time = textField_3.getText();
+				String onlinePay = String.valueOf(chckbxOnlinePayment.isSelected());
+
+				// Guest info
+				List<Guest> guests = collectGuests();
+
+				String xml = CreateXML.generateXML(name, surname, email, type, date, time, onlinePay, guests);
+			}
+		});
+		panel_4.add(btnGenerateXML);
+
+		JButton btnSign = new JButton("Sign");
+		btnSign.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+
+				// Buyer info
+				String name = textField.getText();
+				String surname = textField_1.getText();
+				String email = textField_2.getText();
+				String type = comboBox.getSelectedItem().toString();
+
+				// Course info
+				String date = datePicker.getJFormattedTextField().getText();
+				String time = textField_3.getText();
+				String onlinePay = String.valueOf(chckbxOnlinePayment.isSelected());
+
+				// Guest info
+				List<Guest> guests = collectGuests();
+
+				String xml = CreateXML.generateXML(name, surname, email, type, date, time, onlinePay, guests);
+				
+				XMLSigner.signDocument(xml);
+			}
+		});
+		btnSign.setSize(70, 25);
+		btnSign.setBounds(btnGenerateXML.getX() - btnSign.getWidth() - 5, 0, btnSign.getWidth(), btnSign.getHeight());
+		panel_4.add(btnSign);
 
 	}
 

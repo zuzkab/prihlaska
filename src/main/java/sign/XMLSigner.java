@@ -20,14 +20,15 @@ public class XMLSigner {
 		String xsltFile = getFile("ReservationToHTML.xslt");
 		
 		XmlPlugin xmlPlugin = new XmlPlugin();
-		DataObject xmlObject = xmlPlugin.createObject("XML1", 
+		DataObject xmlObject = xmlPlugin.createObject2("XMLDoc", 
 										"XMLRegistration",
 										xmlFile,
 										xsdFile,
-										"http://www.egov.sk/mvsr/NEV/datatypes/Zapis/Ext/PodanieZiadostiOPrihlasenieImporteromSoZepUI.1.0.xsd", 
-										"http://www.example.com/xml/sb",
+										"", 
+										"http://www.w3.org/2001/XMLSchema",
 										xsltFile, 
-										"http://www.example.com/xml/sb");
+										"http://www.w3.org/1999/XSL/Transform",
+										"HTML");
 
 		if (xmlObject == null) {
 			System.out.println("XMLPlugin.createObject() errorMessage=" + xmlPlugin.getErrorMessage());
@@ -40,8 +41,12 @@ public class XMLSigner {
 			return;
 		}
 
-		rc = dSigner.sign20("signatureId20", "http://www.w3.org/2001/04/xmlenc#sha256", "urn:oid:1.3.158.36061701.1.2.2", "dataEnvelopeId",
-				"dataEnvelopeURI", "dataEnvelopeDescr");
+		rc = dSigner.sign20("signatureId20", 
+					"http://www.w3.org/2001/04/xmlenc#sha256", 
+					"urn:oid:1.3.158.36061701.1.2.2", 
+					"dataEnvelopeId",
+					"dataEnvelopeURI", 
+					"dataEnvelopeDescr");
 		if (rc != 0) {
 			System.out.println("XadesSig.sign20() errorCode=" + rc + ", errorMessage=" + dSigner.getErrorMessage());
 			return;

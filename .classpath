@@ -19,12 +19,19 @@
 	<classpathentry kind="lib" path="C:/Users/zuzanab/eclipse-workspace/registration/JARS/ditecmscapi-1.1-DEE492.jar"/>
 	<classpathentry kind="lib" path="C:/Users/zuzanab/eclipse-workspace/registration/JARS/dsigner-2.0.0.13-DEE492.jar"/>
 	<classpathentry kind="lib" path="C:/Users/zuzanab/eclipse-workspace/registration/JARS/dsigner-config-2.3-DEE492.jar"/>
+	<classpathentry kind="lib" path="C:/Users/zuzanab/eclipse-workspace/registration/JARS/dsigner-plugin-pdf-2.0.0.13-DEE492.jar"/>
+	<classpathentry kind="lib" path="C:/Users/zuzanab/eclipse-workspace/registration/JARS/dsigner-plugin-png-2.0.0.13-DEE492.jar"/>
+	<classpathentry kind="lib" path="C:/Users/zuzanab/eclipse-workspace/registration/JARS/dsigner-plugin-txt-2.0.0.13-DEE492.jar"/>
 	<classpathentry kind="lib" path="C:/Users/zuzanab/eclipse-workspace/registration/JARS/dsigner-plugin-xml-2.0.0.13-DEE492.jar"/>
 	<classpathentry kind="lib" path="C:/Users/zuzanab/eclipse-workspace/registration/JARS/jsoup-1.8.3-DEE492.jar"/>
 	<classpathentry kind="lib" path="C:/Users/zuzanab/eclipse-workspace/registration/JARS/JTattoo-1.6.10-DEE492.jar"/>
+	<classpathentry kind="lib" path="C:/Users/zuzanab/eclipse-workspace/registration/JARS/libPDFNetC-windows-x64-6.3.0-DEE492.jar"/>
+	<classpathentry kind="lib" path="C:/Users/zuzanab/eclipse-workspace/registration/JARS/serializer-2.11.0-DEE492.jar"/>
 	<classpathentry kind="lib" path="C:/Users/zuzanab/eclipse-workspace/registration/JARS/slf4j-api-1.7.10-DEE492.jar"/>
 	<classpathentry kind="lib" path="C:/Users/zuzanab/eclipse-workspace/registration/JARS/slf4j-simple-1.7.10-DEE492.jar"/>
 	<classpathentry kind="lib" path="C:/Users/zuzanab/eclipse-workspace/registration/JARS/xalan-2.7.2-DEE492.jar"/>
+	<classpathentry kind="lib" path="C:/Users/zuzanab/eclipse-workspace/registration/JARS/xercesImpl-2.11.0-DEE492.jar"/>
+	<classpathentry kind="lib" path="C:/Users/zuzanab/eclipse-workspace/registration/JARS/xml-apis-2.11.0-DEE492.jar"/>
 	<classpathentry kind="lib" path="C:/Users/zuzanab/eclipse-workspace/registration/JARS/xmlsec-2.0.6-DEE492.jar"/>
 	<classpathentry kind="output" path="bin/default"/>
 </classpath>
