@@ -2,8 +2,10 @@ package sign;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.StringWriter;
 import java.util.Scanner;
 
+import savingFile.FileSaver;
 import sk.ditec.zep.dsigner.xades.XadesSig;
 import sk.ditec.zep.dsigner.xades.plugin.DataObject;
 import sk.ditec.zep.dsigner.xades.plugins.xmlplugin.XmlPlugin;
@@ -50,9 +52,14 @@ public class XMLSigner {
 		if (rc != 0) {
 			System.out.println("XadesSig.sign20() errorCode=" + rc + ", errorMessage=" + dSigner.getErrorMessage());
 			return;
-		}		
-
+		}	
+		
 		System.out.println(dSigner.getSignedXmlWithEnvelope());
+
+		StringWriter outputWriter = new StringWriter();
+		outputWriter.write(dSigner.getSignedXmlWithEnvelope());
+
+		FileSaver.saveFile(outputWriter, new String("xml"));
 	}
 	
 	  private static String getFile(String fileName) {
