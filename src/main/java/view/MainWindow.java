@@ -24,6 +24,7 @@ import org.jdatepicker.impl.JDatePickerImpl;
 import org.jdatepicker.impl.UtilDateModel;
 
 import createXml.CreateXML;
+import exception.SignException;
 import model.Guest;
 import sign.XMLSigner;
 import transformation.TransformationXMLToHTML;
@@ -318,8 +319,14 @@ public class MainWindow {
 				List<Guest> guests = collectGuests();
 
 				String xml = CreateXML.generateXML(name, surname, email, type, date, time, onlinePay, guests);
-				
-				XMLSigner.signDocument(xml);
+
+				try {
+					XMLSigner.signDocument(xml);
+				} catch (SignException ex) {
+					JLabel text = new JLabel(
+							"<html><body><p style='width: 400px;'>" + ex.getMessage() + "</p></body></html>");
+					JOptionPane.showMessageDialog(new JFrame(), text, "Error", JOptionPane.ERROR_MESSAGE);
+				}
 			}
 		});
 		btnSign.setSize(70, 25);
