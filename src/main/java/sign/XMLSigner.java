@@ -28,9 +28,9 @@ public class XMLSigner {
 				xmlFile, //
 				xsdFile, //
 				"", //
-				"http://www.w3.org/2001/XMLSchema", //
+				"src/main/resources/ReservationSchema.xsd", //
 				xsltFile, //
-				"http://www.w3.org/1999/XSL/Transform", //
+				"src/main/resources/ReservationToHTML.xslt", //
 				"HTML");
 
 		if (xmlObject == null) {
@@ -48,7 +48,7 @@ public class XMLSigner {
 		rc = dSigner.sign20("signatureId20", //
 				"http://www.w3.org/2001/04/xmlenc#sha256", //
 				"urn:oid:1.3.158.36061701.1.2.2", //
-				"dataEnvelopeId", //
+				"registrationEnvelopeId", //
 				"dataEnvelopeURI", //
 				"dataEnvelopeDescr");
 
