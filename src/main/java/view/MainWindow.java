@@ -336,7 +336,7 @@ public class MainWindow {
 		btnSign.setSize(70, 25);
 		btnSign.setBounds(btnGenerateXML.getX() - btnSign.getWidth() - 5, 0, btnSign.getWidth(), btnSign.getHeight());
 		panel_4.add(btnSign);
-		
+
 		JButton btnVAddTimestamp = new JButton("Add Timestamp");
 		btnVAddTimestamp.setSize(123, 25);
 		btnVAddTimestamp.setBounds(btnSign.getX() - btnVAddTimestamp.getWidth() - 5, 0, btnVAddTimestamp.getWidth(),
@@ -345,9 +345,10 @@ public class MainWindow {
 			public void actionPerformed(ActionEvent e) {
 				try {
 					TimeStamp.addTimeStamp();
-				} catch (SAXException | IOException | ParserConfigurationException e1) {
-					// TODO Auto-generated catch block
-					e1.printStackTrace();
+				} catch (SAXException | IOException | IllegalArgumentException | ParserConfigurationException ex) {
+					JLabel text = new JLabel(
+							"<html><body><p style='width: 400px;'>" + ex.getMessage() + "</p></body></html>");
+					JOptionPane.showMessageDialog(new JFrame(), text, "Error", JOptionPane.ERROR_MESSAGE);
 				}
 			}
 		});
