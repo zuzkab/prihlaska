@@ -4,6 +4,7 @@ import java.awt.Component;
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.IOException;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
@@ -18,14 +19,17 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
+import javax.xml.parsers.ParserConfigurationException;
 
 import org.jdatepicker.impl.JDatePanelImpl;
 import org.jdatepicker.impl.JDatePickerImpl;
 import org.jdatepicker.impl.UtilDateModel;
+import org.xml.sax.SAXException;
 
 import createXml.CreateXML;
 import exception.SignException;
 import model.Guest;
+import sign.TimeStamp;
 import sign.XMLSigner;
 import transformation.TransformationXMLToHTML;
 import validation.ValidationXML;
@@ -332,6 +336,22 @@ public class MainWindow {
 		btnSign.setSize(70, 25);
 		btnSign.setBounds(btnGenerateXML.getX() - btnSign.getWidth() - 5, 0, btnSign.getWidth(), btnSign.getHeight());
 		panel_4.add(btnSign);
+		
+		JButton btnVAddTimestamp = new JButton("Add Timestamp");
+		btnVAddTimestamp.setSize(123, 25);
+		btnVAddTimestamp.setBounds(btnSign.getX() - btnVAddTimestamp.getWidth() - 5, 0, btnVAddTimestamp.getWidth(),
+				btnVAddTimestamp.getHeight());
+		btnVAddTimestamp.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				try {
+					TimeStamp.addTimeStamp();
+				} catch (SAXException | IOException | ParserConfigurationException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+			}
+		});
+		panel_4.add(btnVAddTimestamp);
 
 	}
 
