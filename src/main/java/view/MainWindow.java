@@ -345,10 +345,12 @@ public class MainWindow {
 			public void actionPerformed(ActionEvent e) {
 				try {
 					TimeStamp.addTimeStamp();
-				} catch (SAXException | IOException | IllegalArgumentException | ParserConfigurationException ex) {
+				} catch (Exception ex) {
 					JLabel text = new JLabel(
 							"<html><body><p style='width: 400px;'>" + ex.getMessage() + "</p></body></html>");
 					JOptionPane.showMessageDialog(new JFrame(), text, "Error", JOptionPane.ERROR_MESSAGE);
+					
+					ex.printStackTrace();
 				}
 			}
 		});
