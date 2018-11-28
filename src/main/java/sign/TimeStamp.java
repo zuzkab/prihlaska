@@ -56,16 +56,16 @@ public class TimeStamp {
 
 			nNode = doc.getElementsByTagName("xades:QualifyingProperties").item(0);
 
-			Node newNode = nNode.appendChild(doc.createElement("UnsignedProperties"));
-			newNode = newNode.appendChild(doc.createElement("UnsignedSignatureProperties"));
+			Node newNode = nNode.appendChild(doc.createElement("xades:UnsignedProperties"));
+			newNode = newNode.appendChild(doc.createElement("xades:UnsignedSignatureProperties"));
 			
 			Attr idAttribute = doc.createAttribute("Id");
 		    idAttribute.setValue("time_stamp_001");
-		    Element signatureTS =  doc.createElement("SignatureTimeStamp");
+		    Element signatureTS =  doc.createElement("xades:SignatureTimeStamp");
 		    signatureTS.setAttributeNode(idAttribute);
 		    
 			newNode = newNode.appendChild(signatureTS);
-			newNode = newNode.appendChild(doc.createElement("EncapsulatedTimeStamp")); // base64 value, optionalatributy
+			newNode = newNode.appendChild(doc.createElement("xades:EncapsulatedTimeStamp")); // base64 value, optionalatributy
 																						// (Id, Encoding)
 			TimeStampResponse tsRes = new TimeStampResponse(Base64.getDecoder().decode(response.getSOAPBody().getTextContent().getBytes("UTF-8")));
 			newNode.appendChild(doc.createTextNode(new String(Base64.getEncoder().encode(tsRes.getTimeStampToken().getEncoded()))));
