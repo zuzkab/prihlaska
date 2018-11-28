@@ -1,5 +1,5 @@
 <registration>
-	<buyer type="adult">
+	<buyer type="Adult">
 		<name>Júlia</name>
 		<surname>Biela</surname>
 		<email>julia.biela@gmail.com</email>
@@ -12,11 +12,11 @@
 	</course>
 	
 	<guests>
-		<guest type="child">
+		<guest type="Child">
 			<name>Eduard</name>
 			<surname>Biely</surname>
 		</guest>
-		<guest type="child">
+		<guest type="Child">
 			<name>Marta</name>
 			<surname>Biela</surname>
 		</guest>
