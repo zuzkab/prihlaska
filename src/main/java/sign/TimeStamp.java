@@ -19,8 +19,10 @@ import javax.xml.transform.stream.StreamResult;
 
 import org.bouncycastle.tsp.TSPException;
 import org.bouncycastle.tsp.TimeStampResponse;
+import org.w3c.dom.Attr;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
@@ -49,15 +51,20 @@ public class TimeStamp {
 				System.out.println("Selected signed value: " + signedValue);
 			}
 
-			String signedValue64 = Base64.getEncoder().encodeToString(signedValue.getBytes("utf-8"));
-			System.out.println(signedValue64);
-			SOAPMessage response = SOAPClient.getTimestamp(signedValue64);
+			System.out.println(signedValue);
+			SOAPMessage response = SOAPClient.getTimestamp(signedValue);
 
 			nNode = doc.getElementsByTagName("xades:QualifyingProperties").item(0);
 
-			Node newNode = nNode.appendChild(doc.createElement("UnSignedProperties"));
+			Node newNode = nNode.appendChild(doc.createElement("UnsignedProperties"));
 			newNode = newNode.appendChild(doc.createElement("UnsignedSignatureProperties"));
-			newNode = newNode.appendChild(doc.createElement("SignatureTimeStamp"));
+			
+			Attr idAttribute = doc.createAttribute("Id");
+		    idAttribute.setValue("time_stamp_001");
+		    Element signatureTS =  doc.createElement("SignatureTimeStamp");
+		    signatureTS.setAttributeNode(idAttribute);
+		    
+			newNode = newNode.appendChild(signatureTS);
 			newNode = newNode.appendChild(doc.createElement("EncapsulatedTimeStamp")); // base64 value, optionalatributy
 																						// (Id, Encoding)
 			TimeStampResponse tsRes = new TimeStampResponse(Base64.getDecoder().decode(response.getSOAPBody().getTextContent().getBytes("UTF-8")));
