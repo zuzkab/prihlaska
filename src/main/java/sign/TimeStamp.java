@@ -1,7 +1,11 @@
 package sign;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
 import java.io.StringWriter;
 import java.util.Base64;
 
@@ -25,6 +29,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 import savingFile.FileSaver;
@@ -35,9 +40,14 @@ public class TimeStamp {
 			throws SAXException, IOException, ParserConfigurationException, DOMException, SOAPException, TSPException {
 		File signedFile = getFile();
 
+		 InputStream inputStream= new FileInputStream(signedFile);
+	     Reader reader = new InputStreamReader(inputStream,"UTF-8");
+	     InputSource is = new InputSource(reader);
+	     is.setEncoding("UTF-8");
+	        
 		DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
 		DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
-		Document doc = dBuilder.parse(signedFile);
+		Document doc = dBuilder.parse(is);
 
 		NodeList nList = doc.getElementsByTagName("ds:SignatureValue");
 		String signedValue = null;
