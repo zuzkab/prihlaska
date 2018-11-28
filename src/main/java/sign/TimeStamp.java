@@ -17,6 +17,8 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
+import org.bouncycastle.tsp.TSPException;
+import org.bouncycastle.tsp.TimeStampResponse;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
@@ -28,7 +30,7 @@ import soap.SOAPClient;
 
 public class TimeStamp {
 	public static void addTimeStamp()
-			throws SAXException, IOException, ParserConfigurationException, DOMException, SOAPException {
+			throws SAXException, IOException, ParserConfigurationException, DOMException, SOAPException, TSPException {
 		File signedFile = getFile();
 
 		DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
@@ -58,10 +60,9 @@ public class TimeStamp {
 			newNode = newNode.appendChild(doc.createElement("SignatureTimeStamp"));
 			newNode = newNode.appendChild(doc.createElement("EncapsulatedTimeStamp")); // base64 value, optionalatributy
 																						// (Id, Encoding)
-			newNode.appendChild(doc.createTextNode(response.getSOAPBody().getTextContent()));
+			TimeStampResponse tsRes = new TimeStampResponse(Base64.getDecoder().decode(response.getSOAPBody().getTextContent().getBytes("UTF-8")));
+			newNode.appendChild(doc.createTextNode(new String(Base64.getEncoder().encode(tsRes.getTimeStampToken().getEncoded()))));
 
-//			nNode = doc.getElementsByTagName("SignatureTimeStamp").item(0);
-//			newNode = newNode.appendChild(doc.createElement("XMLTimeStamp"));
 			
 			StringWriter outputWriter = new StringWriter();
 			outputWriter.write(xmlToString(doc));
@@ -77,7 +78,7 @@ public class TimeStamp {
 	        Transformer transformer = tf.newTransformer();
 	        transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "no");
 	        transformer.setOutputProperty(OutputKeys.METHOD, "xml");
-	        transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+	        transformer.setOutputProperty(OutputKeys.INDENT, "no");
 	        transformer.setOutputProperty(OutputKeys.ENCODING, "UTF-8");
 
 	        transformer.transform(new DOMSource(doc), new StreamResult(sw));
