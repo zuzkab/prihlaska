@@ -30,6 +30,7 @@ import sign.TimeStamp;
 import sign.XMLSigner;
 import transformation.TransformationXMLToHTML;
 import validation.ValidationXML;
+import validation.ValidationXades;
 
 public class MainWindow {
 
@@ -354,16 +355,25 @@ public class MainWindow {
 		});
 		panel_4.add(btnVAddTimestamp);
 
-		JButton btnValidateXadest = new JButton("Validate XADES-T");
-		btnValidateXadest.setSize(170, 25);
-		btnValidateXadest.setBounds(panel_4.getWidth() - btnValidateXadest.getWidth() - 2,
-				btnShow.getY() + btnShow.getHeight() + 2, btnValidateXadest.getWidth(), btnValidateXadest.getHeight());
-		btnValidateXadest.addActionListener(new ActionListener() {
+		JButton btnValidateXades = new JButton("Validate XADES-T");
+		btnValidateXades.setSize(170, 25);
+		btnValidateXades.setBounds(panel_4.getWidth() - btnValidateXades.getWidth() - 2,
+				btnShow.getY() + btnShow.getHeight() + 2, btnValidateXades.getWidth(), btnValidateXades.getHeight());
+		btnValidateXades.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
+				try {
+					ValidationXades.validateXades();
+				} catch (Exception ex) {
+					JLabel text = new JLabel(
+							"<html><body><p style='width: 400px;'>" + ex.getMessage() + "</p></body></html>");
+					JOptionPane.showMessageDialog(new JFrame(), text, "Error", JOptionPane.ERROR_MESSAGE);
+
+					ex.printStackTrace();
+				}				
 			}
 		});
 
-		panel_4.add(btnValidateXadest);
+		panel_4.add(btnValidateXades);
 	}
 
 	private void addGuestRow() {

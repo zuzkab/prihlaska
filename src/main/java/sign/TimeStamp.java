@@ -9,7 +9,6 @@ import java.io.Reader;
 import java.io.StringWriter;
 import java.util.Base64;
 
-import javax.swing.JFileChooser;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -34,11 +33,12 @@ import org.xml.sax.SAXException;
 
 import savingFile.FileSaver;
 import soap.SOAPClient;
+import util.Util;
 
 public class TimeStamp {
 	public static void addTimeStamp()
 			throws SAXException, IOException, ParserConfigurationException, DOMException, SOAPException, TSPException {
-		File signedFile = getFile();
+		File signedFile = Util.getFile();
 
 		InputStream inputStream = new FileInputStream(signedFile);
 		Reader reader = new InputStreamReader(inputStream, "UTF-8");
@@ -84,38 +84,9 @@ public class TimeStamp {
 					doc.createTextNode(new String(Base64.getEncoder().encode(tsRes.getTimeStampToken().getEncoded()))));
 
 			StringWriter outputWriter = new StringWriter();
-			outputWriter.write(xmlToString(doc));
+			outputWriter.write(Util.xmlToString(doc));
 
 			FileSaver.saveFile(outputWriter, new String("xml"));
 		}
 	}
-
-	public static String xmlToString(Document doc) {
-		try {
-			StringWriter sw = new StringWriter();
-			TransformerFactory tf = TransformerFactory.newInstance();
-			Transformer transformer = tf.newTransformer();
-			transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "no");
-			transformer.setOutputProperty(OutputKeys.METHOD, "xml");
-			transformer.setOutputProperty(OutputKeys.INDENT, "no");
-			transformer.setOutputProperty(OutputKeys.ENCODING, "UTF-8");
-
-			transformer.transform(new DOMSource(doc), new StreamResult(sw));
-			return sw.toString();
-		} catch (Exception ex) {
-			throw new RuntimeException("Error converting to String", ex);
-		}
-	}
-
-	public static File getFile() {
-		JFileChooser fileChooser = new JFileChooser();
-		fileChooser.setCurrentDirectory(new File(System.getProperty("user.home")));
-		int result = fileChooser.showOpenDialog(null);
-		if (result == JFileChooser.APPROVE_OPTION) {
-			System.out.println("Selected file: " + fileChooser.getSelectedFile().getAbsolutePath());
-			return fileChooser.getSelectedFile();
-		}
-		return null;
-	}
-
 }
