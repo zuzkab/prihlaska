@@ -31,6 +31,7 @@ import sign.XMLSigner;
 import transformation.TransformationXMLToHTML;
 import validation.ValidationXML;
 import validation.ValidationXades;
+import validation.ValidationXades.ValidationError;
 
 public class MainWindow {
 
@@ -362,14 +363,27 @@ public class MainWindow {
 		btnValidateXades.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				try {
-					ValidationXades.validateXades();
+					List<ValidationError> validationErrors = ValidationXades.validateXades();
+
+					if (!validationErrors.isEmpty()) {
+
+						JLabel text = new JLabel("<html><body>");
+
+						for (ValidationError ve : validationErrors) {
+							String paragraph = "<p style='width: 400px;'>" + ve.toString() + "</p>";
+							text.setText(text.getText() + paragraph);
+						}
+
+						text.setText(text.getText() + "</body></html>");
+						JOptionPane.showMessageDialog(new JFrame(), text, "Error", JOptionPane.ERROR_MESSAGE);
+					}
 				} catch (Exception ex) {
 					JLabel text = new JLabel(
 							"<html><body><p style='width: 400px;'>" + ex.getMessage() + "</p></body></html>");
 					JOptionPane.showMessageDialog(new JFrame(), text, "Error", JOptionPane.ERROR_MESSAGE);
 
 					ex.printStackTrace();
-				}				
+				}
 			}
 		});
 
