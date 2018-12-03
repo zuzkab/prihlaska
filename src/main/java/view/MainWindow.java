@@ -4,7 +4,6 @@ import java.awt.Component;
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.IOException;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
@@ -19,12 +18,10 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
-import javax.xml.parsers.ParserConfigurationException;
 
 import org.jdatepicker.impl.JDatePanelImpl;
 import org.jdatepicker.impl.JDatePickerImpl;
 import org.jdatepicker.impl.UtilDateModel;
-import org.xml.sax.SAXException;
 
 import createXml.CreateXML;
 import exception.SignException;
@@ -349,7 +346,7 @@ public class MainWindow {
 					JLabel text = new JLabel(
 							"<html><body><p style='width: 400px;'>" + ex.getMessage() + "</p></body></html>");
 					JOptionPane.showMessageDialog(new JFrame(), text, "Error", JOptionPane.ERROR_MESSAGE);
-					
+
 					ex.printStackTrace();
 				}
 			}

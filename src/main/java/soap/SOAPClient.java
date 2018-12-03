@@ -1,75 +1,85 @@
 package soap;
 
-import javax.xml.soap.*;
+import javax.xml.soap.MessageFactory;
+import javax.xml.soap.MimeHeaders;
+import javax.xml.soap.SOAPBody;
+import javax.xml.soap.SOAPConnection;
+import javax.xml.soap.SOAPConnectionFactory;
+import javax.xml.soap.SOAPElement;
+import javax.xml.soap.SOAPEnvelope;
+import javax.xml.soap.SOAPException;
+import javax.xml.soap.SOAPMessage;
+import javax.xml.soap.SOAPPart;
 
 public class SOAPClient {
 
-    public static SOAPMessage getTimestamp(String signedValue64) {
+	public static SOAPMessage getTimestamp(String signedValue64) {
 
-        String soapEndpointUrl = "http://test.ditec.sk/timestampws/TS.asmx";
-        String soapAction = "http://www.ditec.sk/GetTimestamp";
+		String soapEndpointUrl = "http://test.ditec.sk/timestampws/TS.asmx";
+		String soapAction = "http://www.ditec.sk/GetTimestamp";
 
-       return callSoapWebService(soapEndpointUrl, soapAction, signedValue64);
-    }
+		return callSoapWebService(soapEndpointUrl, soapAction, signedValue64);
+	}
 
-    private static void createSoapEnvelope(SOAPMessage soapMessage, String signedValue64) throws SOAPException {
-        SOAPPart soapPart = soapMessage.getSOAPPart();
+	private static void createSoapEnvelope(SOAPMessage soapMessage, String signedValue64) throws SOAPException {
+		SOAPPart soapPart = soapMessage.getSOAPPart();
 
-        String myNamespace = "ns";
-        String myNamespaceURI = "http://www.ditec.sk/";
+		String myNamespace = "ns";
+		String myNamespaceURI = "http://www.ditec.sk/";
 
-        // SOAP Envelope
-        SOAPEnvelope envelope = soapPart.getEnvelope();
-        envelope.addNamespaceDeclaration(myNamespace, myNamespaceURI);
+		// SOAP Envelope
+		SOAPEnvelope envelope = soapPart.getEnvelope();
+		envelope.addNamespaceDeclaration(myNamespace, myNamespaceURI);
 
-        // SOAP Body
-        SOAPBody soapBody = envelope.getBody();
-        SOAPElement soapBodyElem = soapBody.addChildElement("GetTimestamp", myNamespace);
-        SOAPElement soapBodyElem1 = soapBodyElem.addChildElement("dataB64", myNamespace);
-        soapBodyElem1.addTextNode(signedValue64);
-    }
+		// SOAP Body
+		SOAPBody soapBody = envelope.getBody();
+		SOAPElement soapBodyElem = soapBody.addChildElement("GetTimestamp", myNamespace);
+		SOAPElement soapBodyElem1 = soapBodyElem.addChildElement("dataB64", myNamespace);
+		soapBodyElem1.addTextNode(signedValue64);
+	}
 
-    private static SOAPMessage callSoapWebService(String soapEndpointUrl, String soapAction, String signedValue64) {
-    	SOAPMessage soapResponse = null;
-        try {
-            // Create SOAP Connection
-            SOAPConnectionFactory soapConnectionFactory = SOAPConnectionFactory.newInstance();
-            SOAPConnection soapConnection = soapConnectionFactory.createConnection();
+	private static SOAPMessage callSoapWebService(String soapEndpointUrl, String soapAction, String signedValue64) {
+		SOAPMessage soapResponse = null;
+		try {
+			// Create SOAP Connection
+			SOAPConnectionFactory soapConnectionFactory = SOAPConnectionFactory.newInstance();
+			SOAPConnection soapConnection = soapConnectionFactory.createConnection();
 
-            // Send SOAP Message to SOAP Server
-            soapResponse = soapConnection.call(createSOAPRequest(soapAction, signedValue64), soapEndpointUrl);
+			// Send SOAP Message to SOAP Server
+			soapResponse = soapConnection.call(createSOAPRequest(soapAction, signedValue64), soapEndpointUrl);
 
-            // Print the SOAP Response
-            System.out.println("Response SOAP Message:");
-            soapResponse.writeTo(System.out);
-            System.out.println();
+			// Print the SOAP Response
+			System.out.println("Response SOAP Message:");
+			soapResponse.writeTo(System.out);
+			System.out.println();
 
-            soapConnection.close();
-        } catch (Exception e) {
-            System.err.println("\nError occurred while sending SOAP Request to Server!\nMake sure you have the correct endpoint URL and SOAPAction!\n");
-            e.printStackTrace();
-        }
-        
-        return soapResponse;
-    }
+			soapConnection.close();
+		} catch (Exception e) {
+			System.err.println(
+					"\nError occurred while sending SOAP Request to Server!\nMake sure you have the correct endpoint URL and SOAPAction!\n");
+			e.printStackTrace();
+		}
 
-    private static SOAPMessage createSOAPRequest(String soapAction, String signedValue64) throws Exception {
-        MessageFactory messageFactory = MessageFactory.newInstance();
-        SOAPMessage soapMessage = messageFactory.createMessage();
+		return soapResponse;
+	}
 
-        createSoapEnvelope(soapMessage, signedValue64);
+	private static SOAPMessage createSOAPRequest(String soapAction, String signedValue64) throws Exception {
+		MessageFactory messageFactory = MessageFactory.newInstance();
+		SOAPMessage soapMessage = messageFactory.createMessage();
 
-        MimeHeaders headers = soapMessage.getMimeHeaders();
-        headers.addHeader("SOAPAction", soapAction);
+		createSoapEnvelope(soapMessage, signedValue64);
 
-        soapMessage.saveChanges();
+		MimeHeaders headers = soapMessage.getMimeHeaders();
+		headers.addHeader("SOAPAction", soapAction);
 
-        /* Print the request message, just for debugging purposes */
-        System.out.println("Request SOAP Message:");
-        soapMessage.writeTo(System.out);
-        System.out.println("\n");
+		soapMessage.saveChanges();
 
-        return soapMessage;
-    }
+		/* Print the request message, just for debugging purposes */
+		System.out.println("Request SOAP Message:");
+		soapMessage.writeTo(System.out);
+		System.out.println("\n");
+
+		return soapMessage;
+	}
 
 }

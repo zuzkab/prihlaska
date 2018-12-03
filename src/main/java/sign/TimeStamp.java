@@ -40,11 +40,11 @@ public class TimeStamp {
 			throws SAXException, IOException, ParserConfigurationException, DOMException, SOAPException, TSPException {
 		File signedFile = getFile();
 
-		 InputStream inputStream= new FileInputStream(signedFile);
-	     Reader reader = new InputStreamReader(inputStream,"UTF-8");
-	     InputSource is = new InputSource(reader);
-	     is.setEncoding("UTF-8");
-	        
+		InputStream inputStream = new FileInputStream(signedFile);
+		Reader reader = new InputStreamReader(inputStream, "UTF-8");
+		InputSource is = new InputSource(reader);
+		is.setEncoding("UTF-8");
+
 		DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
 		DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
 		Document doc = dBuilder.parse(is);
@@ -68,19 +68,21 @@ public class TimeStamp {
 
 			Node newNode = nNode.appendChild(doc.createElement("xades:UnsignedProperties"));
 			newNode = newNode.appendChild(doc.createElement("xades:UnsignedSignatureProperties"));
-			
-			Attr idAttribute = doc.createAttribute("Id");
-		    idAttribute.setValue("time_stamp_001");
-		    Element signatureTS =  doc.createElement("xades:SignatureTimeStamp");
-		    signatureTS.setAttributeNode(idAttribute);
-		    
-			newNode = newNode.appendChild(signatureTS);
-			newNode = newNode.appendChild(doc.createElement("xades:EncapsulatedTimeStamp")); // base64 value, optionalatributy
-																						// (Id, Encoding)
-			TimeStampResponse tsRes = new TimeStampResponse(Base64.getDecoder().decode(response.getSOAPBody().getTextContent().getBytes("UTF-8")));
-			newNode.appendChild(doc.createTextNode(new String(Base64.getEncoder().encode(tsRes.getTimeStampToken().getEncoded()))));
 
-			
+			Attr idAttribute = doc.createAttribute("Id");
+			idAttribute.setValue("time_stamp_001");
+			Element signatureTS = doc.createElement("xades:SignatureTimeStamp");
+			signatureTS.setAttributeNode(idAttribute);
+
+			newNode = newNode.appendChild(signatureTS);
+			newNode = newNode.appendChild(doc.createElement("xades:EncapsulatedTimeStamp")); // base64 value,
+																								// optionalatributy
+			// (Id, Encoding)
+			TimeStampResponse tsRes = new TimeStampResponse(
+					Base64.getDecoder().decode(response.getSOAPBody().getTextContent().getBytes("UTF-8")));
+			newNode.appendChild(
+					doc.createTextNode(new String(Base64.getEncoder().encode(tsRes.getTimeStampToken().getEncoded()))));
+
 			StringWriter outputWriter = new StringWriter();
 			outputWriter.write(xmlToString(doc));
 
@@ -89,20 +91,20 @@ public class TimeStamp {
 	}
 
 	public static String xmlToString(Document doc) {
-	    try {
-	        StringWriter sw = new StringWriter();
-	        TransformerFactory tf = TransformerFactory.newInstance();
-	        Transformer transformer = tf.newTransformer();
-	        transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "no");
-	        transformer.setOutputProperty(OutputKeys.METHOD, "xml");
-	        transformer.setOutputProperty(OutputKeys.INDENT, "no");
-	        transformer.setOutputProperty(OutputKeys.ENCODING, "UTF-8");
+		try {
+			StringWriter sw = new StringWriter();
+			TransformerFactory tf = TransformerFactory.newInstance();
+			Transformer transformer = tf.newTransformer();
+			transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "no");
+			transformer.setOutputProperty(OutputKeys.METHOD, "xml");
+			transformer.setOutputProperty(OutputKeys.INDENT, "no");
+			transformer.setOutputProperty(OutputKeys.ENCODING, "UTF-8");
 
-	        transformer.transform(new DOMSource(doc), new StreamResult(sw));
-	        return sw.toString();
-	    } catch (Exception ex) {
-	        throw new RuntimeException("Error converting to String", ex);
-	    }
+			transformer.transform(new DOMSource(doc), new StreamResult(sw));
+			return sw.toString();
+		} catch (Exception ex) {
+			throw new RuntimeException("Error converting to String", ex);
+		}
 	}
 
 	public static File getFile() {
