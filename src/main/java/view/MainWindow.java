@@ -31,6 +31,7 @@ import exception.SignException;
 import model.Guest;
 import sign.TimeStamp;
 import sign.XMLSigner;
+import signValidation.SignValidation;
 import transformation.TransformationXMLToHTML;
 import validation.ValidationXML;
 
@@ -354,7 +355,26 @@ public class MainWindow {
 				}
 			}
 		});
-		panel_4.add(btnVAddTimestamp);
+		//panel_4.add(btnVAddTimestamp);
+		
+		JButton btnValidateSign = new JButton("Validate sign");
+		btnValidateSign.setSize(123, 25);
+		btnValidateSign.setBounds(btnSign.getX() - btnValidateSign.getWidth() - 5, 0, btnValidateSign.getWidth(),
+				btnValidateSign.getHeight());
+		btnValidateSign.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				try {
+					SignValidation.validateSignedDoc();
+				} catch (Exception ex) {
+					JLabel text = new JLabel(
+							"<html><body><p style='width: 400px;'>" + ex.getMessage() + "</p></body></html>");
+					JOptionPane.showMessageDialog(new JFrame(), text, "Error", JOptionPane.ERROR_MESSAGE);
+					
+					ex.printStackTrace();
+				}
+			}
+		});
+		panel_4.add(btnValidateSign);
 
 	}
 
