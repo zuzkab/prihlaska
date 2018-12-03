@@ -76,19 +76,20 @@ public class MainWindow {
 	 */
 	private void initialize() {
 		frame = new JFrame();
-		frame.setBounds(100, 100, 570, 482);
+//		frame.setBounds(100, 100, 570, 482);
+		frame.setBounds(100, 100, 570, 520);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.getContentPane().setLayout(null);
 
 		panel = new JPanel();
-		panel.setBounds(12, 12, 556, 32);
+		panel.setBounds(12, 12, frame.getWidth() - 14, 32);
 		frame.getContentPane().add(panel);
 
 		JLabel lblRegistration = new JLabel("Registration");
 		panel.add(lblRegistration);
 
 		JPanel panel_1 = new JPanel();
-		panel_1.setBounds(12, 56, 544, 95);
+		panel_1.setBounds(12, 56, frame.getWidth() - 26, 95);
 		panel_1.setBorder(BorderFactory.createTitledBorder("Buyer info"));
 		panel_1.setLayout(null);
 		frame.getContentPane().add(panel_1);
@@ -129,8 +130,8 @@ public class MainWindow {
 		panel_1.add(comboBox);
 
 		JPanel panel_2 = new JPanel();
+		panel_2.setBounds(12, 160, frame.getWidth() - 26, 95);
 		panel_2.setBorder(BorderFactory.createTitledBorder("Course info"));
-		panel_2.setBounds(12, 160, 544, 95);
 		panel_2.setLayout(null);
 		frame.getContentPane().add(panel_2);
 
@@ -162,8 +163,8 @@ public class MainWindow {
 		panel_2.add(chckbxOnlinePayment);
 
 		panel_3 = new JPanel();
+		panel_3.setBounds(12, 267, frame.getWidth() - 26, 127);
 		panel_3.setBorder(BorderFactory.createTitledBorder("Guest info"));
-		panel_3.setBounds(12, 267, 544, 127);
 		frame.getContentPane().add(panel_3);
 		panel_3.setLayout(null);
 
@@ -206,7 +207,7 @@ public class MainWindow {
 		panel_3.add(btnAddGuest);
 
 		panel_4 = new JPanel();
-		panel_4.setBounds(12, panel_3.getY() + panel_3.getHeight() + 10, 544, 30);
+		panel_4.setBounds(12, panel_3.getY() + panel_3.getHeight() + 10, frame.getWidth() - 26, 60);
 		panel_4.setLayout(null);
 		frame.getContentPane().add(panel_4);
 
@@ -335,7 +336,7 @@ public class MainWindow {
 		panel_4.add(btnSign);
 
 		JButton btnVAddTimestamp = new JButton("Add Timestamp");
-		btnVAddTimestamp.setSize(123, 25);
+		btnVAddTimestamp.setSize(145, 25);
 		btnVAddTimestamp.setBounds(btnSign.getX() - btnVAddTimestamp.getWidth() - 5, 0, btnVAddTimestamp.getWidth(),
 				btnVAddTimestamp.getHeight());
 		btnVAddTimestamp.addActionListener(new ActionListener() {
@@ -353,6 +354,16 @@ public class MainWindow {
 		});
 		panel_4.add(btnVAddTimestamp);
 
+		JButton btnValidateXadest = new JButton("Validate XADES-T");
+		btnValidateXadest.setSize(170, 25);
+		btnValidateXadest.setBounds(panel_4.getWidth() - btnValidateXadest.getWidth() - 2,
+				btnShow.getY() + btnShow.getHeight() + 2, btnValidateXadest.getWidth(), btnValidateXadest.getHeight());
+		btnValidateXadest.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+			}
+		});
+
+		panel_4.add(btnValidateXadest);
 	}
 
 	private void addGuestRow() {
