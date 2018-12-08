@@ -46,7 +46,6 @@ import org.bouncycastle.cert.jcajce.JcaX509CertificateHolder;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -113,22 +112,39 @@ public class SignValidation {
 	 * Miro
 	 */
 	public static String checkCoreValidation(Document doc) throws CertificateException, XMLSecurityException,
-			MarshalException, javax.xml.crypto.dsig.XMLSignatureException {
+			MarshalException, javax.xml.crypto.dsig.XMLSignatureException, XPathExpressionException {
 		String errors = "";
 
-		try {
-			XMLSignatureFactory fac = XMLSignatureFactory.getInstance("DOM");
-			NodeList nl = doc.getElementsByTagName("ds:Signature");
-			DOMValidateContext valContext = new DOMValidateContext(new X509KeySelector(), nl.item(0));
-			XMLSignature signature = fac.unmarshalXMLSignature(valContext);
-			boolean coreValidity = signature.validate(valContext);
+		Element signedInfo = (Element) doc.getElementsByTagName("ds:SignedInfo").item(0);
+		NodeList references = signedInfo.getElementsByTagName("ds:Reference");
+		for (int i = 0; i < references.getLength(); i++) {
+			Element reference = (Element) references.item(i);
+			String referenceURI = reference.getAttribute("URI");
+			Element referencedNode = getElementById(doc, referenceURI);
 
-			if (!coreValidity) {
-				errors = errors.concat("Core validation failed");
+			if (referencedNode != null) {
+				System.out.println(referencedNode.getAttribute("Id"));
+				referencedNode.setIdAttributeNode(referencedNode.getAttributeNode("Id"), true);
+			} else {
+				errors = errors.concat("Object with id=\"" + referenceURI.substring(1) + "\" was not found.");
 			}
-		} catch (Exception e) {
-			errors = errors.concat("Core validation failed");
-			e.printStackTrace();
+		}
+
+		if (errors.isEmpty()) {
+			try {
+				XMLSignatureFactory fac = XMLSignatureFactory.getInstance("DOM");
+				NodeList nl = doc.getElementsByTagName("ds:Signature");
+				DOMValidateContext valContext = new DOMValidateContext(new X509KeySelector(), nl.item(0));
+				XMLSignature signature = fac.unmarshalXMLSignature(valContext);
+				boolean coreValidity = signature.validate(valContext);
+
+				if (!coreValidity) {
+					errors = errors.concat("Core validation failed: SignatureValue for SignedInfo does not match.");
+				}
+			} catch (Exception e) {
+				errors = errors.concat("Core validation failed: " + e.getMessage());
+				e.printStackTrace();
+			}
 		}
 
 		return errors;
@@ -218,12 +234,12 @@ public class SignValidation {
 			}
 			NodeList children = manifest.getChildNodes();
 			List<Element> childrenElement = new LinkedList<Element>();
-			
+
 			for (int j = 0; j < children.getLength(); j++) {
 				if (children.item(j) instanceof Element)
 					childrenElement.add((Element) children.item(j));
 			}
-			
+
 			if (childrenElement.size() == 1) {
 				Element ref = childrenElement.get(0);
 				if (ref.getNodeName().equals("ds:Reference")) {
@@ -236,9 +252,10 @@ public class SignValidation {
 					}
 
 					XPathFactory xpathFactory = XPathFactory.newInstance();
-			        XPath xpath = xpathFactory.newXPath();
-			        Element refObject = (Element) xpath.evaluate("//*[@Id='" + ref.getAttribute("URI").substring(1) + "']", doc, XPathConstants.NODE);
-					
+					XPath xpath = xpathFactory.newXPath();
+					Element refObject = (Element) xpath.evaluate(
+							"//*[@Id='" + ref.getAttribute("URI").substring(1) + "']", doc, XPathConstants.NODE);
+
 					if (refObject == null || !refObject.getNodeName().equals("ds:Object")) {
 						errors = errors.concat("Reference to invalid element in ds:Manifest! \n");
 					} else {
@@ -272,12 +289,12 @@ public class SignValidation {
 		}
 		NodeList sigPropChild = sigProp.getChildNodes();
 		List<Element> children = new LinkedList<Element>();
-		
+
 		for (int i = 0; i < sigPropChild.getLength(); i++) {
 			if (sigPropChild.item(i) instanceof Element)
 				children.add((Element) sigPropChild.item(i));
 		}
-		
+
 		if (children.size() != 2) {
 			errors = errors.concat("Invalid count of ds:SignatureProperty elements in ds:SignatureProperties! \n");
 		} else {
@@ -364,7 +381,7 @@ public class SignValidation {
 				NodeList chNodes = data.getChildNodes();
 				for (int i = 0; i < chNodes.getLength(); i++) {
 					if (chNodes.item(i) instanceof Element == false)
-					       continue;
+						continue;
 					if (chNodes.item(i).getNodeName().equals("ds:X509Certificate")) {
 						certificate = true;
 					} else if (chNodes.item(i).getNodeName().equals("ds:X509IssuerSerial")) {
@@ -461,7 +478,7 @@ public class SignValidation {
 			errors = errors.concat("Invalid count of ds:SignatureValue elements! \n");
 		} else {
 			Element id = (Element) signatureValueList.item(0);
-			if (!id.hasAttribute("Id") ) {
+			if (!id.hasAttribute("Id")) {
 				errors = errors.concat("Missing Id attribute in ds:SignatureValue! \n");
 			}
 		}
@@ -488,8 +505,10 @@ public class SignValidation {
 					if (reference.hasAttribute("URI")) {
 						if (reference.getAttribute("Type").equals("http://www.w3.org/2000/09/xmldsig#Object")) {
 							XPathFactory xpathFactory = XPathFactory.newInstance();
-					        XPath xpath = xpathFactory.newXPath();
-					        Element refElement = (Element) xpath.evaluate("//*[@Id='" + reference.getAttribute("URI").substring(1) + "']", doc, XPathConstants.NODE);
+							XPath xpath = xpathFactory.newXPath();
+							Element refElement = (Element) xpath.evaluate(
+									"//*[@Id='" + reference.getAttribute("URI").substring(1) + "']", doc,
+									XPathConstants.NODE);
 							if (refElement != null) {
 								if (refElement.getNodeName().equals("ds:KeyInfo")) {
 									kiRef = true;
@@ -504,8 +523,10 @@ public class SignValidation {
 						} else if (reference.getAttribute("Type")
 								.equals("http://www.w3.org/2000/09/xmldsig#SignatureProperties")) {
 							XPathFactory xpathFactory = XPathFactory.newInstance();
-					        XPath xpath = xpathFactory.newXPath();
-					        Element refElement = (Element) xpath.evaluate("//*[@Id='" + reference.getAttribute("URI").substring(1) + "']", doc, XPathConstants.NODE);
+							XPath xpath = xpathFactory.newXPath();
+							Element refElement = (Element) xpath.evaluate(
+									"//*[@Id='" + reference.getAttribute("URI").substring(1) + "']", doc,
+									XPathConstants.NODE);
 							if (refElement != null) {
 								if (refElement.getNodeName().equals("ds:SignatureProperties")) {
 									sgtrRef = true;
@@ -520,8 +541,10 @@ public class SignValidation {
 						} else if (reference.getAttribute("Type")
 								.equals("http://uri.etsi.org/01903#SignedProperties")) {
 							XPathFactory xpathFactory = XPathFactory.newInstance();
-					        XPath xpath = xpathFactory.newXPath();
-					        Element refElement = (Element) xpath.evaluate("//*[@Id='" + reference.getAttribute("URI").substring(1) + "']", doc, XPathConstants.NODE);
+							XPath xpath = xpathFactory.newXPath();
+							Element refElement = (Element) xpath.evaluate(
+									"//*[@Id='" + reference.getAttribute("URI").substring(1) + "']", doc,
+									XPathConstants.NODE);
 							if (refElement != null) {
 								if (refElement.getNodeName().equals("xades:SignedProperties")) {
 									sgdRef = true;
@@ -536,8 +559,10 @@ public class SignValidation {
 						} else if (reference.getAttribute("Type")
 								.equals("http://www.w3.org/2000/09/xmldsig#Manifest")) {
 							XPathFactory xpathFactory = XPathFactory.newInstance();
-					        XPath xpath = xpathFactory.newXPath();
-					        Element refElement = (Element) xpath.evaluate("//*[@Id='" + reference.getAttribute("URI").substring(1) + "']", doc, XPathConstants.NODE);
+							XPath xpath = xpathFactory.newXPath();
+							Element refElement = (Element) xpath.evaluate(
+									"//*[@Id='" + reference.getAttribute("URI").substring(1) + "']", doc,
+									XPathConstants.NODE);
 							if (refElement != null) {
 								if (!refElement.getNodeName().equals("ds:Manifest")) {
 									errors = errors.concat(
@@ -729,17 +754,23 @@ public class SignValidation {
 		return null;
 	}
 
-	private static Element getElementById(Document doc, String id) {
-		NodeList nl = doc.getElementsByTagName("ds:Object");
+	private static Element getElementById(Document doc, String id) throws XPathExpressionException {
+//		NodeList nl = doc.getElementsByTagName("ds:Object");
+//
+//		for (int i = 0; i < nl.getLength(); i++) {
+//			Element element = (Element) nl.item(i);
+//			if (id.equals(element.getAttribute("Id"))) {
+//				return element;
+//			}
+//		}
+//
+//		return null;
 
-		for (int i = 0; i < nl.getLength(); i++) {
-			Element element = (Element) nl.item(i);
-			if (id.equals(element.getAttribute("Id"))) {
-				return element;
-			}
-		}
+		XPathFactory xpathFactory = XPathFactory.newInstance();
+		XPath xpath = xpathFactory.newXPath();
+		Element refObject = (Element) xpath.evaluate("//*[@Id='" + id.substring(1) + "']", doc, XPathConstants.NODE);
 
-		return null;
+		return refObject;
 	}
 
 	private static byte[] applyTransforms(Element transforms, Element object)
