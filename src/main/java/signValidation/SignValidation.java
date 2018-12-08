@@ -1,23 +1,40 @@
 package signValidation;
 
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
+import java.util.Arrays;
 import java.util.Base64;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import javax.swing.JFileChooser;
+import javax.xml.crypto.dsig.TransformException;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.TransformerException;
 
+import org.apache.xml.security.Init;
+import org.apache.xml.security.exceptions.XMLSecurityException;
+import org.apache.xml.security.signature.XMLSignatureException;
+import org.apache.xml.security.signature.XMLSignatureInput;
+import org.apache.xml.security.transforms.InvalidTransformException;
+import org.apache.xml.security.transforms.Transforms;
 import org.bouncycastle.cert.jcajce.JcaX509CertificateHolder;
+import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -28,8 +45,15 @@ import exception.SignValidationException;
 
 public class SignValidation {
 
-	public static void validateSignedDoc()
-			throws ParserConfigurationException, SAXException, IOException, CertificateException {
+	private static final List<String> TRANSFORMATIONS = Arrays.asList(//
+			"http://www.w3.org/TR/2001/REC-xml-c14n-20010315", //
+			"http://www.w3.org/2001/04/xmlenc#sha256");
+
+	private static final Map<String, String> DIGEST_ALGORITHMS = initializeDigestAlgorithms();
+
+	public static void validateSignedDoc() throws ParserConfigurationException, SAXException, IOException,
+			CertificateException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, TransformerException,
+			TransformException, DOMException, XMLSignatureException, InvalidTransformException, XMLSecurityException {
 		File signedFile = getFile();
 
 		InputStream inputStream = new FileInputStream(signedFile);
@@ -38,6 +62,7 @@ public class SignValidation {
 		is.setEncoding("UTF-8");
 
 		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+		factory.setNamespaceAware(true);
 		DocumentBuilder builder = factory.newDocumentBuilder();
 		Document doc = builder.parse(signedFile);
 
@@ -66,11 +91,75 @@ public class SignValidation {
 	}
 
 	/*
+	 * overenie referencií v elementoch ds:Manifest: dereferencovanie URI,
+	 * aplikovanie príslušnej ds:Transforms transformácie (pri base64 decode),
+	 * overenie hodnoty ds:DigestValue,
+	 */
+	public static String checkManifestReferences(Element manifestRef, Element manifestRefObject)
+			throws NoSuchAlgorithmException, InvalidAlgorithmParameterException, TransformerException,
+			TransformException, IOException, DOMException, XMLSignatureException, InvalidTransformException,
+			XMLSecurityException {
+		String errors = "";
+
+		byte[] data = new byte[0];
+		NodeList transformsElements = manifestRef.getElementsByTagName("ds:Transforms");
+		for (int i = 0; i < transformsElements.getLength(); i++) {
+			Element transformsElement = (Element) transformsElements.item(i);
+
+			NodeList transformElements = manifestRef.getElementsByTagName("ds:Transform");
+			for (int j = 0; j < transformElements.getLength(); j++) {
+				Element transformElement = (Element) transformElements.item(i);
+				if (transformElement.hasAttribute("Algorithm")) {
+					String transAlg = transformElement.getAttribute("Algorithm");
+					if (TRANSFORMATIONS.contains(transAlg)) {
+						data = applyTransforms(transformsElement, manifestRefObject);
+						Element digestMethodElement = (Element) manifestRef.getElementsByTagName("ds:DigestMethod")
+								.item(0);
+						if (digestMethodElement.hasAttribute("Algorithm")) {
+							String digestAlg = digestMethodElement.getAttribute("Algorithm");
+							if (DIGEST_ALGORITHMS.keySet().contains(digestAlg)) {
+								data = applyDigestMethod(data, digestMethodElement.getAttribute("Algorithm"));
+								String computedDigest = Base64.getEncoder().encodeToString(data);
+
+								Element digestValueElement = (Element) manifestRef
+										.getElementsByTagName("ds:DigestValue").item(0);
+								String digestValue = digestValueElement.getTextContent();
+
+								System.out.println("Computed Digest: " + computedDigest);
+								System.out.println("DigestValue: " + digestValue);
+
+								if (!computedDigest.equals(digestValue)) {
+									errors = errors.concat("DigestValue and computed digest are not equal.");
+								}
+
+							} else {
+								errors = errors.concat(
+										"Invalid digest algorithm! Is not one of: " + DIGEST_ALGORITHMS.keySet());
+							}
+						} else {
+							errors = errors.concat("DigestMethod element does not have attribute \"Algorithm\".");
+						}
+						data = applyDigestMethod(data, digestMethodElement.getAttribute("Algorithm"));
+					} else {
+						errors = errors.concat("Invalid trasnform algorithm! Is not one of: " + TRANSFORMATIONS);
+					}
+				} else {
+					errors = errors.concat("Transform element does not have attribute \"Algorithm\".");
+				}
+			}
+		}
+
+		return errors;
+	}
+
+	/*
 	 * overenie ds:Manifest elementov: každý ds:Manifest element musí mať Id
 	 * atribút, overenie hodnoty Type atribútu voči profilu XAdES_ZEP, každý
 	 * ds:Manifest element musí obsahovať práve jednu referenciu na ds:Object
 	 */
-	public static String checkManifest(Document doc) {
+	public static String checkManifest(Document doc) throws NoSuchAlgorithmException,
+			InvalidAlgorithmParameterException, TransformerException, TransformException, IOException, DOMException,
+			XMLSignatureException, InvalidTransformException, XMLSecurityException {
 		String errors = "";
 		NodeList manifestList = doc.getElementsByTagName("ds:Manifest");
 
@@ -96,6 +185,8 @@ public class SignValidation {
 					Element refObject = getElementById(doc, ref.getAttribute("URI").substring(1));
 					if (refObject == null || !refObject.getNodeName().equals("ds:Object")) {
 						errors = errors.concat("Reference to invalid element in ds:Manifest! \n");
+					} else {
+						errors = errors.concat(checkManifestReferences(ref, refObject));
 					}
 				} else {
 					errors = errors.concat("Invalid element in ds:Manifest! \n");
@@ -555,5 +646,35 @@ public class SignValidation {
 		}
 
 		return null;
+	}
+
+	private static byte[] applyTransforms(Element transforms, Element object)
+			throws DOMException, XMLSignatureException, InvalidTransformException, XMLSecurityException {
+		Init.init();
+		Transforms transformsObj = new Transforms(transforms, "");
+		ByteArrayOutputStream os = new ByteArrayOutputStream();
+
+		transformsObj.performTransforms(new XMLSignatureInput(object), os);
+
+//		System.out.println("after transformation: " + new String(os.toByteArray()));
+
+		return os.toByteArray();
+	}
+
+	private static byte[] applyDigestMethod(byte[] data, String algorithm) throws NoSuchAlgorithmException {
+		MessageDigest digest = MessageDigest.getInstance(DIGEST_ALGORITHMS.get(algorithm));
+		return digest.digest(data);
+	}
+
+	private static Map<String, String> initializeDigestAlgorithms() {
+		Map<String, String> digestAlgorithms = new HashMap<>();
+
+		digestAlgorithms.put("http://www.w3.org/2000/09/xmldsig#sha1", "SHA-1");
+		digestAlgorithms.put("http://www.w3.org/2001/04/xmldsig-more#sha224", "SHA-224");
+		digestAlgorithms.put("http://www.w3.org/2001/04/xmlenc#sha256", "SHA-256");
+		digestAlgorithms.put("http://www.w3.org/2001/04/xmldsig-more#sha384", "SHA-384");
+		digestAlgorithms.put("http://www.w3.org/2001/04/xmlenc#sha512", "SHA-512");
+
+		return digestAlgorithms;
 	}
 }
