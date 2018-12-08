@@ -21,7 +21,11 @@ import java.util.List;
 import java.util.Map;
 
 import javax.swing.JFileChooser;
+import javax.xml.crypto.MarshalException;
 import javax.xml.crypto.dsig.TransformException;
+import javax.xml.crypto.dsig.XMLSignature;
+import javax.xml.crypto.dsig.XMLSignatureFactory;
+import javax.xml.crypto.dsig.dom.DOMValidateContext;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -53,7 +57,8 @@ public class SignValidation {
 
 	public static void validateSignedDoc() throws ParserConfigurationException, SAXException, IOException,
 			CertificateException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, TransformerException,
-			TransformException, DOMException, XMLSignatureException, InvalidTransformException, XMLSecurityException {
+			TransformException, DOMException, XMLSignatureException, InvalidTransformException, XMLSecurityException,
+			MarshalException, javax.xml.crypto.dsig.XMLSignatureException {
 		File signedFile = getFile();
 
 		InputStream inputStream = new FileInputStream(signedFile);
@@ -83,6 +88,8 @@ public class SignValidation {
 
 		errors = errors.concat(checkManifest(doc));
 
+		errors = errors.concat(checkCoreValidation(doc));
+
 		if (!errors.equals(""))
 			throw new SignValidationException(errors);
 		else
@@ -91,14 +98,42 @@ public class SignValidation {
 	}
 
 	/*
+	 * • Core validation (podľa špecifikácie XML Signature) – overenie hodnoty
+	 * podpisu ds:SignatureValue a referencií v ds:SignedInfo: • dereferencovanie
+	 * URI, kanonikalizácia referencovaných ds:Manifest elementov a overenie hodnôt
+	 * odtlačkov ds:DigestValue, • kanonikalizácia ds:SignedInfo a overenie hodnoty
+	 * ds:SignatureValue pomocou pripojeného podpisového certifikátu v ds:KeyInfo,
+	 */
+	public static String checkCoreValidation(Document doc) throws CertificateException, XMLSecurityException,
+			MarshalException, javax.xml.crypto.dsig.XMLSignatureException {
+		String errors = "";
+
+		try {
+			XMLSignatureFactory fac = XMLSignatureFactory.getInstance("DOM");
+			NodeList nl = doc.getElementsByTagName("ds:Signature");
+			DOMValidateContext valContext = new DOMValidateContext(new X509KeySelector(), nl.item(0));
+			XMLSignature signature = fac.unmarshalXMLSignature(valContext);
+			boolean coreValidity = signature.validate(valContext);
+
+			if (!coreValidity) {
+				errors = errors.concat("Core validation failed");
+			}
+		} catch (Exception e) {
+			errors = errors.concat("Core validation failed");
+			e.printStackTrace();
+		}
+
+		return errors;
+	}
+
+	/*
 	 * overenie referencií v elementoch ds:Manifest: dereferencovanie URI,
 	 * aplikovanie príslušnej ds:Transforms transformácie (pri base64 decode),
 	 * overenie hodnoty ds:DigestValue,
 	 */
-	public static String checkManifestReferences(Element manifestRef, Element manifestRefObject)
-			throws NoSuchAlgorithmException, InvalidAlgorithmParameterException, TransformerException,
-			TransformException, IOException, DOMException, XMLSignatureException, InvalidTransformException,
-			XMLSecurityException {
+	public static String checkManifest(Element manifestRef, Element manifestRefObject) throws NoSuchAlgorithmException,
+			InvalidAlgorithmParameterException, TransformerException, TransformException, IOException, DOMException,
+			XMLSignatureException, InvalidTransformException, XMLSecurityException {
 		String errors = "";
 
 		byte[] data = new byte[0];
@@ -186,7 +221,7 @@ public class SignValidation {
 					if (refObject == null || !refObject.getNodeName().equals("ds:Object")) {
 						errors = errors.concat("Reference to invalid element in ds:Manifest! \n");
 					} else {
-						errors = errors.concat(checkManifestReferences(ref, refObject));
+						errors = errors.concat(checkManifest(ref, refObject));
 					}
 				} else {
 					errors = errors.concat("Invalid element in ds:Manifest! \n");
@@ -284,7 +319,7 @@ public class SignValidation {
 				errors = errors.concat("Missing Id attribute in ds:KeyInfo! \n");
 			}
 
-			NodeList nl = keyInfo.getElementsByTagName("ds:X509Certificate");
+			NodeList nl = keyInfo.getElementsByTagName("ds:X509Data");
 			Element data = null;
 			if (nl.getLength() > 0) {
 				data = (Element) nl.item(0);
