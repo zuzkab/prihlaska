@@ -17,6 +17,7 @@ import java.security.cert.X509Certificate;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -30,6 +31,10 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
+import javax.xml.xpath.XPath;
+import javax.xml.xpath.XPathConstants;
+import javax.xml.xpath.XPathExpressionException;
+import javax.xml.xpath.XPathFactory;
 
 import org.apache.xml.security.Init;
 import org.apache.xml.security.exceptions.XMLSecurityException;
@@ -41,6 +46,7 @@ import org.bouncycastle.cert.jcajce.JcaX509CertificateHolder;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -58,7 +64,7 @@ public class SignValidation {
 	public static void validateSignedDoc() throws ParserConfigurationException, SAXException, IOException,
 			CertificateException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, TransformerException,
 			TransformException, DOMException, XMLSignatureException, InvalidTransformException, XMLSecurityException,
-			MarshalException, javax.xml.crypto.dsig.XMLSignatureException {
+			MarshalException, javax.xml.crypto.dsig.XMLSignatureException, XPathExpressionException {
 		File signedFile = getFile();
 
 		InputStream inputStream = new FileInputStream(signedFile);
@@ -103,6 +109,8 @@ public class SignValidation {
 	 * URI, kanonikalizácia referencovaných ds:Manifest elementov a overenie hodnôt
 	 * odtlačkov ds:DigestValue, • kanonikalizácia ds:SignedInfo a overenie hodnoty
 	 * ds:SignatureValue pomocou pripojeného podpisového certifikátu v ds:KeyInfo,
+	 * 
+	 * Miro
 	 */
 	public static String checkCoreValidation(Document doc) throws CertificateException, XMLSecurityException,
 			MarshalException, javax.xml.crypto.dsig.XMLSignatureException {
@@ -130,6 +138,8 @@ public class SignValidation {
 	 * overenie referencií v elementoch ds:Manifest: dereferencovanie URI,
 	 * aplikovanie príslušnej ds:Transforms transformácie (pri base64 decode),
 	 * overenie hodnoty ds:DigestValue,
+	 * 
+	 * Miro
 	 */
 	public static String checkManifest(Element manifestRef, Element manifestRefObject) throws NoSuchAlgorithmException,
 			InvalidAlgorithmParameterException, TransformerException, TransformException, IOException, DOMException,
@@ -191,10 +201,12 @@ public class SignValidation {
 	 * overenie ds:Manifest elementov: každý ds:Manifest element musí mať Id
 	 * atribút, overenie hodnoty Type atribútu voči profilu XAdES_ZEP, každý
 	 * ds:Manifest element musí obsahovať práve jednu referenciu na ds:Object
+	 * 
+	 * Zuzana, Miro - checked
 	 */
 	public static String checkManifest(Document doc) throws NoSuchAlgorithmException,
 			InvalidAlgorithmParameterException, TransformerException, TransformException, IOException, DOMException,
-			XMLSignatureException, InvalidTransformException, XMLSecurityException {
+			XMLSignatureException, InvalidTransformException, XMLSecurityException, XPathExpressionException {
 		String errors = "";
 		NodeList manifestList = doc.getElementsByTagName("ds:Manifest");
 
@@ -205,9 +217,15 @@ public class SignValidation {
 				errors = errors.concat("Missing Id attribute in ds:Manifest! \n");
 			}
 			NodeList children = manifest.getChildNodes();
-
-			if (children.getLength() == 1) {
-				Element ref = (Element) children.item(0);
+			List<Element> childrenElement = new LinkedList<Element>();
+			
+			for (int j = 0; j < children.getLength(); j++) {
+				if (children.item(j) instanceof Element)
+					childrenElement.add((Element) children.item(j));
+			}
+			
+			if (childrenElement.size() == 1) {
+				Element ref = childrenElement.get(0);
 				if (ref.getNodeName().equals("ds:Reference")) {
 					if (ref.hasAttribute("Type")) {
 						if (!ref.getAttribute("Type").equals("http://www.w3.org/2000/09/xmldsig#Object")) {
@@ -217,7 +235,10 @@ public class SignValidation {
 						errors = errors.concat("Missing Type attribute in ds:Manifest! \n");
 					}
 
-					Element refObject = getElementById(doc, ref.getAttribute("URI").substring(1));
+					XPathFactory xpathFactory = XPathFactory.newInstance();
+			        XPath xpath = xpathFactory.newXPath();
+			        Element refObject = (Element) xpath.evaluate("//*[@Id='" + ref.getAttribute("URI").substring(1) + "']", doc, XPathConstants.NODE);
+					
 					if (refObject == null || !refObject.getNodeName().equals("ds:Object")) {
 						errors = errors.concat("Reference to invalid element in ds:Manifest! \n");
 					} else {
@@ -240,6 +261,8 @@ public class SignValidation {
 	 * dva elementy ds:SignatureProperty pre xzep:SignatureVersion a
 	 * xzep:ProductInfos, obidva ds:SignatureProperty musia mať atribút Target
 	 * nastavený na ds:Signature
+	 * 
+	 * Zuzana - checked
 	 */
 	public static String checkSignatureProperties(Document doc) {
 		String errors = "";
@@ -248,19 +271,25 @@ public class SignValidation {
 			errors = errors.concat("Missing Id attribute in ds:SignatureProperties! \n");
 		}
 		NodeList sigPropChild = sigProp.getChildNodes();
-
-		if (sigPropChild.getLength() != 2) {
+		List<Element> children = new LinkedList<Element>();
+		
+		for (int i = 0; i < sigPropChild.getLength(); i++) {
+			if (sigPropChild.item(i) instanceof Element)
+				children.add((Element) sigPropChild.item(i));
+		}
+		
+		if (children.size() != 2) {
 			errors = errors.concat("Invalid count of ds:SignatureProperty elements in ds:SignatureProperties! \n");
 		} else {
-			if (sigPropChild.item(0).getNodeName().equals("ds:SignatureProperty")
-					&& sigPropChild.item(1).getNodeName().equals("ds:SignatureProperty")) {
-				Element sigProp1 = (Element) sigPropChild.item(0);
-				Element sigProp2 = (Element) sigPropChild.item(1);
+			if (children.get(0).getNodeName().equals("ds:SignatureProperty")
+					&& children.get(1).getNodeName().equals("ds:SignatureProperty")) {
+				Element sigProp1 = children.get(0);
+				Element sigProp2 = children.get(1);
 				boolean sv = false;
 				boolean pi = false;
 
 				if (sigProp1.hasAttribute("Target")) {
-					if (!sigProp1.getAttribute("Target")
+					if (!sigProp1.getAttribute("Target").substring(1)
 							.equals(((Element) doc.getElementsByTagName("ds:Signature").item(0)).getAttribute("Id"))) {
 						errors = errors.concat("Invalid Target attribute in ds:SignatureProperty! \n");
 					}
@@ -269,7 +298,7 @@ public class SignValidation {
 				}
 
 				if (sigProp2.hasAttribute("Target")) {
-					if (!sigProp2.getAttribute("Target")
+					if (!sigProp2.getAttribute("Target").substring(1)
 							.equals(((Element) doc.getElementsByTagName("ds:Signature").item(0)).getAttribute("Id"))) {
 						errors = errors.concat("Invalid Target attribute in ds:SignatureProperty! \n");
 					}
@@ -277,12 +306,12 @@ public class SignValidation {
 					errors = errors.concat("Missing Id attribute in ds:SignatureProperty! \n");
 				}
 
-				if (sigProp1.getFirstChild().getNodeName().equals("xzep:ProductInfos")
-						|| sigProp2.getFirstChild().getNodeName().equals("xzep:ProductInfos")) {
+				if (sigProp1.getElementsByTagName("xzep:ProductInfos").item(0) != null
+						|| sigProp2.getElementsByTagName("xzep:ProductInfos").item(0) != null) {
 					pi = true;
 				}
-				if (sigProp1.getFirstChild().getNodeName().equals("xzep:SignatureVersion")
-						|| sigProp2.getFirstChild().getNodeName().equals("xzep:SignatureVersion")) {
+				if (sigProp1.getElementsByTagName("xzep:SignatureVersion").item(0) != null
+						|| sigProp2.getElementsByTagName("xzep:SignatureVersion").item(0) != null) {
 					sv = true;
 				}
 
@@ -308,6 +337,8 @@ public class SignValidation {
 	 * ds:X509SubjectName, hodnoty elementov ds:X509IssuerSerial a
 	 * ds:X509SubjectName súhlasia s príslušnými hodnatami v certifikáte, ktorý sa
 	 * nachádza v ds:X509Certificate
+	 * 
+	 * Zuzana - checked ds:X509IssuerName?
 	 */
 	public static String checkKeyInfo(Document doc) throws CertificateException {
 		String errors = "";
@@ -332,6 +363,8 @@ public class SignValidation {
 			if (data != null && data.getNodeName().equals("ds:X509Data")) {
 				NodeList chNodes = data.getChildNodes();
 				for (int i = 0; i < chNodes.getLength(); i++) {
+					if (chNodes.item(i) instanceof Element == false)
+					       continue;
 					if (chNodes.item(i).getNodeName().equals("ds:X509Certificate")) {
 						certificate = true;
 					} else if (chNodes.item(i).getNodeName().equals("ds:X509IssuerSerial")) {
@@ -388,12 +421,16 @@ public class SignValidation {
 	/*
 	 * overenie ostatných elementov profilu XAdES_ZEP, ktoré prináležia do
 	 * špecifikácie XML Signature
+	 * 
+	 * Zuzana - checked
 	 */
-	public static String checkOtherElements(Document doc) {
+	public static String checkOtherElements(Document doc) throws XPathExpressionException {
 		String errors = "";
 
 		/*
 		 * ds:Signature: musí mať Id atribút, musí mať špecifikovaný namespace xmlns:ds
+		 * 
+		 * checked
 		 */
 		NodeList signatureList = doc.getElementsByTagName("ds:Signature");
 		if (signatureList.getLength() != 1) {
@@ -416,13 +453,15 @@ public class SignValidation {
 
 		/*
 		 * ds:SignatureValue: musí mať Id atribút
+		 * 
+		 * checked
 		 */
 		NodeList signatureValueList = doc.getElementsByTagName("ds:SignatureValue");
 		if (signatureValueList.getLength() != 1) {
 			errors = errors.concat("Invalid count of ds:SignatureValue elements! \n");
 		} else {
 			Element id = (Element) signatureValueList.item(0);
-			if (!id.hasAttribute("Id")) {
+			if (!id.hasAttribute("Id") ) {
 				errors = errors.concat("Missing Id attribute in ds:SignatureValue! \n");
 			}
 		}
@@ -432,6 +471,8 @@ public class SignValidation {
 		 * voči profilu XAdES_ZEP pre: ds:KeyInfo element, ds:SignatureProperties
 		 * element, xades:SignedProperties element, všetky ostatné referencie v rámci
 		 * ds:SignedInfo musia byť referenciami na ds:Manifest elementy
+		 * 
+		 * checked
 		 */
 		NodeList signatureInfoList = doc.getElementsByTagName("ds:SignedInfo");
 		Element signatureInfo = (Element) signatureInfoList.item(0);
@@ -446,9 +487,11 @@ public class SignValidation {
 				if (reference.hasAttribute("Type")) {
 					if (reference.hasAttribute("URI")) {
 						if (reference.getAttribute("Type").equals("http://www.w3.org/2000/09/xmldsig#Object")) {
-							Element refElement = doc.getElementById(reference.getAttribute("URI"));
+							XPathFactory xpathFactory = XPathFactory.newInstance();
+					        XPath xpath = xpathFactory.newXPath();
+					        Element refElement = (Element) xpath.evaluate("//*[@Id='" + reference.getAttribute("URI").substring(1) + "']", doc, XPathConstants.NODE);
 							if (refElement != null) {
-								if (refElement.getTagName().equals("ds:KeyInfo")) {
+								if (refElement.getNodeName().equals("ds:KeyInfo")) {
 									kiRef = true;
 								} else {
 									errors = errors.concat(
@@ -460,9 +503,11 @@ public class SignValidation {
 							}
 						} else if (reference.getAttribute("Type")
 								.equals("http://www.w3.org/2000/09/xmldsig#SignatureProperties")) {
-							Element refElement = doc.getElementById(reference.getAttribute("URI"));
+							XPathFactory xpathFactory = XPathFactory.newInstance();
+					        XPath xpath = xpathFactory.newXPath();
+					        Element refElement = (Element) xpath.evaluate("//*[@Id='" + reference.getAttribute("URI").substring(1) + "']", doc, XPathConstants.NODE);
 							if (refElement != null) {
-								if (refElement.getTagName().equals("ds:SignatureProperties")) {
+								if (refElement.getNodeName().equals("ds:SignatureProperties")) {
 									sgtrRef = true;
 								} else {
 									errors = errors.concat(
@@ -474,9 +519,11 @@ public class SignValidation {
 							}
 						} else if (reference.getAttribute("Type")
 								.equals("http://uri.etsi.org/01903#SignedProperties")) {
-							Element refElement = doc.getElementById(reference.getAttribute("URI"));
+							XPathFactory xpathFactory = XPathFactory.newInstance();
+					        XPath xpath = xpathFactory.newXPath();
+					        Element refElement = (Element) xpath.evaluate("//*[@Id='" + reference.getAttribute("URI").substring(1) + "']", doc, XPathConstants.NODE);
 							if (refElement != null) {
-								if (refElement.getTagName().equals("xades:SignedProperties")) {
+								if (refElement.getNodeName().equals("xades:SignedProperties")) {
 									sgdRef = true;
 								} else {
 									errors = errors.concat(
@@ -488,9 +535,11 @@ public class SignValidation {
 							}
 						} else if (reference.getAttribute("Type")
 								.equals("http://www.w3.org/2000/09/xmldsig#Manifest")) {
-							Element refElement = doc.getElementById(reference.getAttribute("URI"));
+							XPathFactory xpathFactory = XPathFactory.newInstance();
+					        XPath xpath = xpathFactory.newXPath();
+					        Element refElement = (Element) xpath.evaluate("//*[@Id='" + reference.getAttribute("URI").substring(1) + "']", doc, XPathConstants.NODE);
 							if (refElement != null) {
-								if (!refElement.getTagName().equals("ds:Manifest")) {
+								if (!refElement.getNodeName().equals("ds:Manifest")) {
 									errors = errors.concat(
 											"Invalid element name for Type attribute in ds:Reference in ds:SignedInfo! \n");
 								}
@@ -529,6 +578,8 @@ public class SignValidation {
 	/*
 	 * kontrola obsahu ds:DigestMethod vo všetkých referenciách v ds:SignedInfo musi
 	 * obsahovať URI niektorého z podporovaných algoritmov podľa profilu XAdES_ZEP
+	 * 
+	 * Zuzana - checked
 	 */
 	public static String checkDigestMethod(Document doc) {
 		String errors = "";
@@ -555,6 +606,8 @@ public class SignValidation {
 	/*
 	 * kontrola obsahu ds:Transforms vo všetkých referenciách v ds:SignedInfo musi
 	 * obsahovať URI niektorého z podporovaných algoritmov podľa profilu XAdES_ZEP
+	 * 
+	 * Zuzana - checked
 	 */
 	public static String checkTransforms(Document doc) {
 		String errors = "";
@@ -578,6 +631,8 @@ public class SignValidation {
 	/*
 	 * kontrola obsahu ds:SignatureMethod musi obsahovať URI niektorého z
 	 * podporovaných algoritmov pre dané elementy podľa profilu XAdES_ZEP
+	 * 
+	 * Zuzana - checked
 	 */
 	public static String checkSignatureMethod(Document doc) {
 		String errors = "";
@@ -607,6 +662,8 @@ public class SignValidation {
 	/*
 	 * kontrola obsahu ds:CanonicalizationMethod musi obsahovať URI niektorého z
 	 * podporovaných algoritmov pre dané elementy podľa profilu XAdES_ZEP
+	 * 
+	 * Zuzana - checked
 	 */
 	public static String checkCanonicalizationMethod(Document doc) {
 		String errors = "";
@@ -632,6 +689,8 @@ public class SignValidation {
 	/*
 	 * koreňový element musí obsahovať atribúty xmlns:xzep a xmlns:ds podľa profilu
 	 * XADES_ZEP
+	 * 
+	 * Zuzana - checked
 	 */
 	public static String checkRootElement(Document doc) {
 		String errors = "";
