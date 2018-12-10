@@ -50,7 +50,38 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
+import org.bouncycastle.asn1.ASN1InputStream;
+import org.bouncycastle.asn1.ASN1Primitive;
+import org.bouncycastle.asn1.DERIA5String;
+import org.bouncycastle.asn1.DEROctetString;
+import org.bouncycastle.asn1.x509.CRLDistPoint;
+import org.bouncycastle.asn1.x509.DistributionPoint;
+import org.bouncycastle.asn1.x509.DistributionPointName;
+import org.bouncycastle.asn1.x509.Extension;
+import org.bouncycastle.asn1.x509.GeneralName;
+import org.bouncycastle.asn1.x509.GeneralNames;
+
 import exception.SignValidationException;
+import java.io.DataInputStream;
+import java.io.UnsupportedEncodingException;
+import java.net.URL;
+import java.net.URLConnection;
+import java.security.cert.X509CRL;
+import java.security.cert.X509CRLEntry;
+import java.util.ArrayList;
+import java.util.Date;
+
+import org.bouncycastle.asn1.DEREnumerated;
+import static org.bouncycastle.asn1.cms.CMSObjectIdentifiers.data;
+import static org.bouncycastle.asn1.isismtt.ocsp.RequestedCertificate.certificate;
+import org.bouncycastle.asn1.x509.X509Extensions;
+import org.bouncycastle.cms.CMSException;
+import org.bouncycastle.cms.CMSSignedData;
+import org.bouncycastle.tsp.TSPException;
+import org.bouncycastle.tsp.TimeStampToken;
+import org.bouncycastle.x509.extension.X509ExtensionUtil;
+import org.w3c.dom.Node;
+
 
 public class SignValidation {
 
@@ -63,7 +94,7 @@ public class SignValidation {
 	public static void validateSignedDoc() throws ParserConfigurationException, SAXException, IOException,
 			CertificateException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, TransformerException,
 			TransformException, DOMException, XMLSignatureException, InvalidTransformException, XMLSecurityException,
-			MarshalException, javax.xml.crypto.dsig.XMLSignatureException, XPathExpressionException {
+			MarshalException, javax.xml.crypto.dsig.XMLSignatureException, XPathExpressionException, CMSException, TSPException {
 		File signedFile = getFile();
 
 		InputStream inputStream = new FileInputStream(signedFile);
@@ -77,6 +108,9 @@ public class SignValidation {
 		Document doc = builder.parse(signedFile);
 
 		String errors = "";
+                
+                errors = errors.concat(is_revoked(doc));
+                
 		errors = errors.concat(checkRootElement(doc));
 
 		errors = errors.concat(checkSignatureMethod(doc));
@@ -101,6 +135,162 @@ public class SignValidation {
 			System.out.println("VALIDATION SUCCESSFULL");
 
 	}
+        
+        /*
+        Overenie časovej pečiatky:
+	- overenie platnosti podpisového certifikátu časovej pečiatky 
+        voči času UtcNow a voči platnému poslednému CRL.
+	- overenie MessageImprint z časovej pečiatky voči podpisu ds:SignatureValue
+
+        Katka
+        */
+        public static String check_timestamp(Document doc) throws CMSException, UnsupportedEncodingException, TSPException, IOException {
+            String errors="";
+            
+            //message imprint vs ds:signatureValue
+            
+            //get message imprint digest
+            String encapsulatedTimeStamp = doc.getElementsByTagName("xades:EncapsulatedTimeStamp").item(0).getChildNodes().item(0).getNodeValue();
+            byte[] tspBinaries = Base64.getDecoder().decode(encapsulatedTimeStamp.getBytes("UTF-8"));
+            TimeStampToken token = new TimeStampToken(new CMSSignedData(tspBinaries));       
+            byte[] messageImprintDigest = token.getTimeStampInfo().getMessageImprintDigest();
+            
+            //Overenie message imprint z časovej pečiatky:
+            //Porovnám digest value z message imprint so signatureValue a keď sa to nezhoduje tak pečiatka nepatrí k podpisu
+                      
+            //get signature value
+            String signatureValue = doc.getElementsByTagName("ds:signatureValue").item(0).getChildNodes().item(0).getNodeValue();
+            byte[] signatureValueBytes = signatureValue.getBytes("UTF-8");
+            
+            
+            if (Arrays.equals(messageImprintDigest, signatureValueBytes))
+            {
+                System.out.println("OK");
+            } else {
+                errors = errors.concat("digest from message imprint != signatureValue "); 
+            }
+            
+            return errors;
+        }
+        
+        /*
+        Overenie platnosti podpisového certifikátu:
+	- Overenie platnosti podpisového certifikátu dokumentu voči 
+        času T z časovej pečiatky a voči platnému poslednému CRL.
+
+        Katka
+        */        
+        public static String is_revoked (Document doc) throws CMSException, TSPException, IOException {
+                       
+        String errors = "";
+        
+        String encapsulatedTimeStamp = doc.getElementsByTagName("xades:EncapsulatedTimeStamp").item(0).getChildNodes().item(0).getNodeValue();
+
+        byte[] tspBinaries = Base64.getDecoder().decode(encapsulatedTimeStamp.getBytes("UTF-8"));
+        TimeStampToken token = new TimeStampToken(new CMSSignedData(tspBinaries));
+        
+        Date timestamp_date = token.getTimeStampInfo().getGenTime();
+        
+               
+        try  {
+            
+            X509CRLEntry revokedCertificate = null;
+            X509CRL crl = null;
+            
+            CertificateFactory cf = CertificateFactory.getInstance("X.509");
+            InputStream stream = new ByteArrayInputStream(Base64.getDecoder().decode(doc.getElementsByTagName("ds:X509Certificate").item(0).getTextContent().getBytes()));
+            System.out.println(stream);
+            X509Certificate certificate = (X509Certificate) cf.generateCertificate(stream);
+            System.out.println(certificate);
+            JcaX509CertificateHolder certHolder = new JcaX509CertificateHolder(certificate);
+            System.out.println(certHolder);
+            
+            byte[] crlDistributionPointDerEncodedArray = certificate.getExtensionValue(Extension.cRLDistributionPoints.getId());
+
+            ASN1InputStream oAsnInStream = new ASN1InputStream(new ByteArrayInputStream(crlDistributionPointDerEncodedArray));
+            ASN1Primitive derObjCrlDP = oAsnInStream.readObject();
+            DEROctetString dosCrlDP = (DEROctetString) derObjCrlDP;
+
+            oAsnInStream.close();
+
+            byte[] crldpExtOctets = dosCrlDP.getOctets();
+            ASN1InputStream oAsnInStream2 = new ASN1InputStream(new ByteArrayInputStream(crldpExtOctets));
+            ASN1Primitive derObj2 = oAsnInStream2.readObject();
+            CRLDistPoint distPoint = CRLDistPoint.getInstance(derObj2);
+
+            oAsnInStream2.close();
+
+            List<String> crlUrls = new ArrayList<String>();
+            for (DistributionPoint dp : distPoint.getDistributionPoints())
+            {
+                DistributionPointName dpn = dp.getDistributionPoint();
+                // Look for URIs in fullName
+                if (dpn != null)
+                {
+                    if (dpn.getType() == DistributionPointName.FULL_NAME)
+                    {
+                        GeneralName[] genNames = GeneralNames.getInstance(dpn.getName()).getNames();
+                        // Look for an URI
+                        for (int j = 0; j < genNames.length; j++)
+                        {
+                            if (genNames[j].getTagNo() == GeneralName.uniformResourceIdentifier)
+                            {
+                                String url = DERIA5String.getInstance(genNames[j].getName()).getString();
+                                crlUrls.add(url);
+                            }
+                        }
+                    }
+                }
+            }
+
+            for (String _url : crlUrls) {
+                System.out.println(_url);
+                
+                URL url = new URL(_url);
+                URLConnection connection = url.openConnection();
+
+                try(DataInputStream inStream = new DataInputStream(connection.getInputStream())){
+
+                    crl = (X509CRL)cf.generateCRL(inStream);
+                }
+
+                revokedCertificate = crl.getRevokedCertificate(certificate.getSerialNumber());
+                               
+
+                if(revokedCertificate !=null){
+                    System.out.println("Revoked");
+                    
+                    //if revoked, get revocation date
+                    Date revocationDate = revokedCertificate.getRevocationDate();
+                    
+                    //get TimeStampDate
+                    
+                    //compare it
+                    if (revocationDate.compareTo(timestamp_date) < 0) {
+                        errors = errors.concat("Certificate was revoked. ");
+                    }
+                    else {
+                        System.out.println("DEBUG: Certificate valid at timestamping");
+                    }
+                }
+                
+                else {
+                    System.out.println("DEBUG: Certificate valid, no CRL entry ");
+                }
+            
+            }
+                      
+        
+        }
+        catch (Throwable e)
+        {
+            e.printStackTrace();
+        }
+        
+        
+        System.out.println("DEBUG: end of CRLcheck function"); 
+        return errors;
+        }
 
 	/*
 	 * • Core validation (podľa špecifikácie XML Signature) – overenie hodnoty
