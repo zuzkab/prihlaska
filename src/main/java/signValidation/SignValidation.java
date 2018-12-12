@@ -715,10 +715,6 @@ public class SignValidation {
 						.decode(data.getElementsByTagName("ds:X509Certificate").item(0).getTextContent().getBytes()));
 				X509Certificate cert = (X509Certificate) cf.generateCertificate(stream);
 				JcaX509CertificateHolder certHolder = new JcaX509CertificateHolder(cert);
-				String issuer = certHolder.getIssuer().toString();
-				if (!issuer.equals(data.getElementsByTagName("ds:X509IssuerName").item(0).getTextContent())) {
-					errors = errors.concat("ds:X509IssuerName is not equal with issuer name in ds:X509Certificate! \n");
-				}
 
 				String serial = certHolder.getSerialNumber().toString();
 				if (!serial.equals(data.getElementsByTagName("ds:X509SerialNumber").item(0).getTextContent())) {
