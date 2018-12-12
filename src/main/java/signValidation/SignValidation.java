@@ -66,19 +66,28 @@ import java.io.DataInputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.security.cert.CRLException;
 import java.security.cert.X509CRL;
 import java.security.cert.X509CRLEntry;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
+import java.util.HashSet;
+import java.util.Iterator;
 
 import org.bouncycastle.asn1.DEREnumerated;
 import static org.bouncycastle.asn1.cms.CMSObjectIdentifiers.data;
 import static org.bouncycastle.asn1.isismtt.ocsp.RequestedCertificate.certificate;
 import org.bouncycastle.asn1.x509.X509Extensions;
+import org.bouncycastle.cert.X509CertificateHolder;
+import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter;
 import org.bouncycastle.cms.CMSException;
 import org.bouncycastle.cms.CMSSignedData;
+import org.bouncycastle.cms.SignerInformation;
+import org.bouncycastle.cms.SignerInformationStore;
 import org.bouncycastle.tsp.TSPException;
 import org.bouncycastle.tsp.TimeStampToken;
+import org.bouncycastle.util.Store;
 import org.bouncycastle.x509.extension.X509ExtensionUtil;
 import org.w3c.dom.Node;
 
@@ -94,7 +103,7 @@ public class SignValidation {
 	public static void validateSignedDoc() throws ParserConfigurationException, SAXException, IOException,
 			CertificateException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, TransformerException,
 			TransformException, DOMException, XMLSignatureException, InvalidTransformException, XMLSecurityException,
-			MarshalException, javax.xml.crypto.dsig.XMLSignatureException, XPathExpressionException, CMSException, TSPException {
+			MarshalException, javax.xml.crypto.dsig.XMLSignatureException, XPathExpressionException, CMSException, TSPException, UnsupportedEncodingException, CRLException {
 		File signedFile = getFile();
 
 		InputStream inputStream = new FileInputStream(signedFile);
@@ -109,6 +118,7 @@ public class SignValidation {
 
 		String errors = "";
                 
+                errors = errors.concat(check_timestamp(doc));
                 errors = errors.concat(is_revoked(doc));
                 
 		errors = errors.concat(checkRootElement(doc));
@@ -144,15 +154,117 @@ public class SignValidation {
 
         Katka
         */
-        public static String check_timestamp(Document doc) throws CMSException, UnsupportedEncodingException, TSPException, IOException {
+        public static String check_timestamp(Document doc) throws CMSException, UnsupportedEncodingException, TSPException, IOException, CertificateException, CRLException {
             String errors="";
             
-            //message imprint vs ds:signatureValue
-            
-            //get message imprint digest
             String encapsulatedTimeStamp = doc.getElementsByTagName("xades:EncapsulatedTimeStamp").item(0).getChildNodes().item(0).getNodeValue();
             byte[] tspBinaries = Base64.getDecoder().decode(encapsulatedTimeStamp.getBytes("UTF-8"));
             TimeStampToken token = new TimeStampToken(new CMSSignedData(tspBinaries));       
+            
+            //timestamp time vs UtcNow
+            Date timestamp_time = token.getTimeStampInfo().getGenTime();
+            
+            //timestamp time vs CRL
+            CMSSignedData cmssigned_data = token.toCMSSignedData();
+            Collection<X509Certificate> result = new HashSet<X509Certificate>();
+            Store<?> certStore = cmssigned_data.getCertificates();
+            SignerInformationStore signers = cmssigned_data.getSignerInfos();
+            Iterator<?> it = signers.getSigners().iterator();
+            while (it.hasNext()) {
+		SignerInformation signer = (SignerInformation) it.next();
+		@SuppressWarnings("unchecked")
+		Collection<?> certCollection = certStore.getMatches(signer.getSID());
+		Iterator<?> certIt = certCollection.iterator();
+		X509CertificateHolder certificateHolder = (X509CertificateHolder) certIt.next();
+		try {
+			result.add(new JcaX509CertificateConverter().getCertificate(certificateHolder));
+		} catch (CertificateException error) {
+		}
+            }  
+           
+            X509CRLEntry revokedCertificate = null;
+            X509CRL crl = null;
+            CertificateFactory cf = CertificateFactory.getInstance("X.509");
+
+            for (X509Certificate cert : result) {
+                byte[] crlDP = cert.getExtensionValue(Extension.cRLDistributionPoints.getId());
+
+                ASN1InputStream oAsnInStream = new ASN1InputStream(new ByteArrayInputStream(crlDP));
+                ASN1Primitive derObjCrlDP = oAsnInStream.readObject();
+                DEROctetString dosCrlDP = (DEROctetString) derObjCrlDP;
+                oAsnInStream.close();
+
+                byte[] crldpExtOctets = dosCrlDP.getOctets();
+                ASN1InputStream oAsnInStream2 = new ASN1InputStream(new ByteArrayInputStream(crldpExtOctets));
+                ASN1Primitive derObj2 = oAsnInStream2.readObject();
+                CRLDistPoint distPoint = CRLDistPoint.getInstance(derObj2);
+
+                oAsnInStream2.close();
+
+                List<String> crlUrls = new ArrayList<String>();
+                for (DistributionPoint dp : distPoint.getDistributionPoints())
+                {
+                    DistributionPointName dpn = dp.getDistributionPoint();
+                    // Look for URIs in fullName
+                    if (dpn != null)
+                    {
+                        if (dpn.getType() == DistributionPointName.FULL_NAME)
+                        {
+                            GeneralName[] genNames = GeneralNames.getInstance(dpn.getName()).getNames();
+                            // Look for an URI
+                            for (int j = 0; j < genNames.length; j++)
+                            {
+                                if (genNames[j].getTagNo() == GeneralName.uniformResourceIdentifier)
+                                {
+                                    String url = DERIA5String.getInstance(genNames[j].getName()).getString();
+                                    crlUrls.add(url);
+                                }
+                            }
+                        }
+                    }
+                }
+
+                for (String _url : crlUrls) {
+                    System.out.println(_url);
+                
+                    URL url = new URL(_url);
+                    URLConnection connection = url.openConnection();
+
+                    try(DataInputStream inStream = new DataInputStream(connection.getInputStream())){
+
+                        crl = (X509CRL)cf.generateCRL(inStream);
+                    }
+
+                    revokedCertificate = crl.getRevokedCertificate(cert.getSerialNumber());
+                               
+
+                    if(revokedCertificate !=null){
+                        System.out.println("Revoked");
+                    
+                        //if revoked, get revocation date
+                        Date revocationDate = revokedCertificate.getRevocationDate();
+                    
+                         //get TimeStampDate
+                    
+                        //compare it
+                        if (revocationDate.compareTo(timestamp_time) < 0) {
+                            errors = errors.concat("Certificate was revoked. ");
+                        }
+                        else {
+                            System.out.println("DEBUG: Certificate valid at timestamping");
+                        }
+                    }
+                
+                    else {
+                        System.out.println("DEBUG: Certificate valid, no CRL entry ");
+                    }
+            
+                }
+            
+            }
+            //message imprint vs ds:signatureValue
+            
+            //get message imprint digest      
             byte[] messageImprintDigest = token.getTimeStampInfo().getMessageImprintDigest();
             
             //Overenie message imprint z časovej pečiatky:
