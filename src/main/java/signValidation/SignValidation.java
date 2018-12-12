@@ -69,6 +69,8 @@ import java.net.URLConnection;
 import java.security.cert.CRLException;
 import java.security.cert.X509CRL;
 import java.security.cert.X509CRLEntry;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -163,6 +165,9 @@ public class SignValidation {
             
             //timestamp time vs UtcNow
             Date timestamp_time = token.getTimeStampInfo().getGenTime();
+            OffsetDateTime now1 = OffsetDateTime.now(ZoneOffset.UTC);
+            //DateTime utc = new DateTime(DateTimeZone.UTC);
+
             
             //timestamp time vs CRL
             CMSSignedData cmssigned_data = token.toCMSSignedData();
