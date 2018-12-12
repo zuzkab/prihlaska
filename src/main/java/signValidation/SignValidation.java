@@ -238,12 +238,12 @@ public class SignValidation {
                     try(DataInputStream inStream = new DataInputStream(connection.getInputStream())){
 
                         crl = (X509CRL)cf.generateCRL(inStream);
-                    }
+                    } catch(Exception e) {
+                    	
+                    }                   
 
-                    revokedCertificate = crl.getRevokedCertificate(cert.getSerialNumber());
-                               
-
-                    if(revokedCertificate !=null){
+                    if(crl !=null){
+                    	revokedCertificate = crl.getRevokedCertificate(cert.getSerialNumber());
                         System.out.println("Revoked");
                     
                         //if revoked, get revocation date
@@ -276,7 +276,7 @@ public class SignValidation {
             //Porovnám digest value z message imprint so signatureValue a keď sa to nezhoduje tak pečiatka nepatrí k podpisu
                       
             //get signature value
-            String signatureValue = doc.getElementsByTagName("ds:signatureValue").item(0).getChildNodes().item(0).getNodeValue();
+            String signatureValue = doc.getElementsByTagName("ds:SignatureValue").item(0).getChildNodes().item(0).getNodeValue();
             byte[] signatureValueBytes = signatureValue.getBytes("UTF-8");
             
             
@@ -284,7 +284,7 @@ public class SignValidation {
             {
                 System.out.println("OK");
             } else {
-                errors = errors.concat("digest from message imprint != signatureValue "); 
+                errors = errors.concat("digest from message imprint != signatureValue \n"); 
             }
             
             return errors;
